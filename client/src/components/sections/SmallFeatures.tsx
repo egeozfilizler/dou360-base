@@ -1,44 +1,72 @@
-import { Clock, Users, Shield } from "lucide-react";
+import { 
+  Map, 
+  Zap, 
+  Smartphone, 
+  Box, 
+  Search, 
+  Navigation 
+} from "lucide-react";
+import { Marquee } from "@/components/ui/marquee"; // Dosya yoluna dikkat et
 
 const features = [
   {
-    icon: Clock,
-    title: "24/7 Support",
-    description: "Round-the-clock assistance to ensure your success at any time.",
+    icon: Navigation,
+    title: "Instant Navigation",
+    description: "Find the shortest path to any classroom.",
   },
   {
-    icon: Users,
-    title: "Dedicated Team",
-    description: "A committed team of experts working exclusively for your goals.",
+    icon: Zap,
+    title: "Real-time Data",
+    description: "Live occupancy status for study areas.",
   },
   {
-    icon: Shield,
-    title: "Secure & Reliable",
-    description: "Enterprise-grade security to protect your data and operations.",
+    icon: Smartphone,
+    title: "Mobile Optimized",
+    description: "Seamless experience on all devices.",
+  },
+  {
+    icon: Box,
+    title: "3D Interaction",
+    description: "Immersive 3D campus models.",
+  },
+  {
+    icon: Search,
+    title: "Smart Search",
+    description: "Locate faculty offices instantly.",
+  },
+  {
+    icon: Map,
+    title: "Floor Plans",
+    description: "Detailed layouts for every floor.",
   },
 ];
 
 export function SmallFeatures() {
   return (
-    <section className="py-12 border-y border-border bg-muted/30">
-      <div className="container-custom">
-        <div className="grid md:grid-cols-3 gap-8">
+    <section className="py-8 border-y border-border bg-muted/20 overflow-hidden">
+      <div className="container-fluid px-0"> {/* Container-fluid ile tam genişlik */}
+        
+        <Marquee pauseOnHover repeat={4} className="[--duration:40s]">
           {features.map((feature, index) => (
             <div
-              key={feature.title}
-              className="flex items-start gap-4 animate-fade-in"
-              style={{ animationDelay: `${index * 0.1}s` }}
+              key={index}
+              className="flex items-center gap-4 mx-4 p-4 rounded-xl border border-transparent hover:border-primary/20 hover:bg-background/50 transition-all cursor-default min-w-[300px]"
             >
-              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                <feature.icon className="w-6 h-6 text-primary" />
+              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0 text-primary">
+                <feature.icon className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-outfit font-semibold text-foreground mb-1">{feature.title}</h3>
-                <p className="text-muted-foreground text-sm">{feature.description}</p>
+                <h3 className="font-outfit font-semibold text-foreground text-sm mb-0.5">
+                  {feature.title}
+                </h3>
+                <p className="text-muted-foreground text-xs">
+                  {feature.description}
+                </p>
               </div>
             </div>
           ))}
-        </div>
+        </Marquee>
+
       </div>
     </section>
   );

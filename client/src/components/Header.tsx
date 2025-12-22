@@ -1,29 +1,63 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown, Lock, GraduationCap, Globe, BookOpen } from "lucide-react";
 import { AnimatedThemeToggler } from "./ui/animated-theme-toggler";
+import { cn } from "@/lib/utils";
+
+// Navigation Menu Imports
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu";
+
+// Alert Dialog Imports
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const navItems = [
   { name: "Home", path: "/" },
   {
-    name: "Pages",
+    name: "Portals",
     path: "#",
     children: [
-      { name: "About", path: "/#about" },
-      { name: "Services", path: "/#services" },
-      { name: "Team", path: "/#team" },
-      { name: "Pricing", path: "/#pricing" },
+      { name: "University Website", path: "/#university-website", description: "Official website of Dogus University." },
+      { name: "OBS", path: "/#obs", description: "Student Information System." },
+      { name: "DouOnline", path: "/#douonline", description: "Distance learning platform." },
     ],
   },
-  { name: "Blog", path: "/blog" },
+  {
+    name: "Features",
+    path: "#",
+    children: [
+      { name: "Interactive 3D Navigation", path: "/#interactive-3d-navigation", isLocked: true },
+      { name: "Live Availability", path: "/#live-availability", isLocked: true }, // İsim güncellendi
+      { name: "Faculty Finder", path: "/#faculty-finder", isLocked: true },
+      { name: "Personalized Schedule", path: "/#personalized-schedule", isLocked: true },
+      { name: "Smart Study Notes", path: "/#smart-study-notes", isLocked: true },
+    ],
+  },
   { name: "Contact", path: "/#contact" },
 ];
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-  // Removed theme toggler logic, now handled by AnimatedThemeToggler
+  const [mobileOpenDropdown, setMobileOpenDropdown] = useState<string | null>(null);
+  
   const location = useLocation();
 
   useEffect(() => {
@@ -36,77 +70,101 @@ export function Header() {
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
-    setOpenDropdown(null);
+    setMobileOpenDropdown(null);
   }, [location]);
+
+  const cleanTriggerStyle = "bg-transparent hover:bg-transparent focus:bg-transparent data-[active]:bg-transparent data-[state=open]:bg-transparent text-muted-foreground hover:text-foreground data-[state=open]:text-foreground h-auto p-0 text-base font-normal shadow-none";
 
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? "bg-background/100 backdrop-blur-md shadow-sm"
+          ? "bg-background/80 backdrop-blur-md shadow-sm border-b border-border/40"
           : "bg-background/100"
       }`}
     >
-      <div className="container-custom">
+      <div className="container mx-auto px-4 md:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">B</span>
-            </div>
-            <span className="font-outfit font-bold text-xl text-foreground">Base</span>
+          <Link to="/" className="flex items-center gap-2 z-50">
+            <span className="font-outfit font-bold text-xl text-foreground tracking-tight">DOU360</span>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-8">
-            {navItems.map((item) => (
-              <div key={item.name} className="relative">
-                {item.children ? (
-                  <div
-                    className="group"
-                    onMouseEnter={() => setOpenDropdown(item.name)}
-                    onMouseLeave={() => setOpenDropdown(null)}
-                  >
-                    <button className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors py-2">
-                      {item.name}
-                      <ChevronDown className="w-4 h-4" />
-                    </button>
-                    {openDropdown === item.name && (
-                      <div className="absolute top-full left-0 pt-2">
-                        <div className="bg-card border border-border rounded-lg shadow-lg py-2 min-w-[160px]">
-                          {item.children.map((child) => (
-                            <Link
-                              key={child.name}
-                              to={child.path}
-                              className="block px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                            >
-                              {child.name}
-                            </Link>
-                          ))}
-                        </div>
-                      </div>
+          <div className="hidden lg:flex items-center justify-center flex-1 ml-8">
+            <NavigationMenu>
+              <NavigationMenuList className="gap-8">
+                {navItems.map((item) => (
+                  <NavigationMenuItem key={item.name}>
+                    {item.children ? (
+                      <>
+                        <NavigationMenuTrigger className={cleanTriggerStyle}>
+                          {item.name}
+                        </NavigationMenuTrigger>
+                        <NavigationMenuContent>
+                          {/* PORTALS TASARIMI */}
+                          {item.name === "Portals" ? (
+                            <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
+                              <li className="row-span-3">
+                                <NavigationMenuLink asChild>
+                                  <Link
+                                    className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md hover:bg-muted/80 transition-colors"
+                                    to="/#university-website"
+                                  >
+                                    <GraduationCap className="h-8 w-8 mb-4 text-primary" />
+                                    <div className="mb-2 text-lg font-medium">
+                                      University Website
+                                    </div>
+                                    <p className="text-sm leading-tight text-muted-foreground">
+                                      Access the official Dogus University portal for announcements and news.
+                                    </p>
+                                  </Link>
+                                </NavigationMenuLink>
+                              </li>
+                              
+                              <ListItem href="/#obs" title="OBS" icon={<Globe className="w-4 h-4 text-muted-foreground" />}>
+                                Student Information System.
+                              </ListItem>
+                              <ListItem href="/#douonline" title="DouOnline" icon={<BookOpen className="w-4 h-4 text-muted-foreground" />}>
+                                Distance learning platform.
+                              </ListItem>
+                            </ul>
+                          ) : (
+                            /* FEATURES TASARIMI (Kilitli Öğeler Burada) */
+                            <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-[1fr_1fr]">
+                              {item.children.map((child) => (
+                                <ListItem
+                                  key={child.name}
+                                  title={child.name}
+                                  href={child.path}
+                                  isLocked={(child as any).isLocked}
+                                >
+                                  {(child as any).description || "Access this feature."}
+                                </ListItem>
+                              ))}
+                            </ul>
+                          )}
+                        </NavigationMenuContent>
+                      </>
+                    ) : (
+                      <Link to={item.path}>
+                        <NavigationMenuLink 
+                          className={cn(navigationMenuTriggerStyle(), cleanTriggerStyle)}
+                        >
+                          {item.name}
+                        </NavigationMenuLink>
+                      </Link>
                     )}
-                  </div>
-                ) : (
-                  <Link
-                    to={item.path}
-                    className={`text-muted-foreground hover:text-foreground transition-colors ${
-                      location.pathname === item.path ? "text-foreground font-medium" : ""
-                    }`}
-                  >
-                    {item.name}
-                  </Link>
-                )}
-              </div>
-            ))}
-          </nav>
+                  </NavigationMenuItem>
+                ))}
+              </NavigationMenuList>
+            </NavigationMenu>
+          </div>
 
           {/* Right Section */}
           <div className="flex items-center gap-4">
-            {/* Theme Toggle */}
-            <AnimatedThemeToggler className="p-2 rounded-lg hover:bg-muted transition-colors" />
+            <AnimatedThemeToggler className="p-2 rounded-lg hover:bg-accent transition-colors" />
 
-            {/* Auth Buttons - Desktop */}
             <div className="hidden lg:flex items-center gap-3">
               <Link
                 to="/signin"
@@ -114,15 +172,14 @@ export function Header() {
               >
                 Sign In
               </Link>
-              <Link to="/signup" className="btn-primary">
+              <Link to="/signup" className="btn-primary sm px-5 py-2 text-sm rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
                 Sign Up
               </Link>
             </div>
 
-            {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-2 rounded-lg hover:bg-muted transition-colors"
+              className="lg:hidden p-2 rounded-lg hover:bg-accent transition-colors text-foreground"
               aria-label="Toggle menu"
             >
               {isMobileMenuOpen ? (
@@ -136,7 +193,7 @@ export function Header() {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden py-4 border-t border-border animate-fade-in">
+          <div className="lg:hidden py-4 border-t border-border animate-in slide-in-from-top-5 fade-in duration-200">
             <nav className="flex flex-col gap-2">
               {navItems.map((item) => (
                 <div key={item.name}>
@@ -144,27 +201,37 @@ export function Header() {
                     <div>
                       <button
                         onClick={() =>
-                          setOpenDropdown(openDropdown === item.name ? null : item.name)
+                          setMobileOpenDropdown(mobileOpenDropdown === item.name ? null : item.name)
                         }
-                        className="flex items-center justify-between w-full py-2 text-muted-foreground hover:text-foreground transition-colors"
+                        className="flex items-center justify-between w-full px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
                       >
-                        {item.name}
+                        <span className="font-medium">{item.name}</span>
                         <ChevronDown
                           className={`w-4 h-4 transition-transform ${
-                            openDropdown === item.name ? "rotate-180" : ""
+                            mobileOpenDropdown === item.name ? "rotate-180" : ""
                           }`}
                         />
                       </button>
-                      {openDropdown === item.name && (
-                        <div className="pl-4 flex flex-col gap-1">
+                      {mobileOpenDropdown === item.name && (
+                        <div className="pl-4 pr-2 pb-2 flex flex-col gap-1 bg-accent/30 rounded-b-md mx-2">
                           {item.children.map((child) => (
-                            <Link
-                              key={child.name}
-                              to={child.path}
-                              className="py-2 text-muted-foreground hover:text-foreground transition-colors"
-                            >
-                              {child.name}
-                            </Link>
+                            /* MOBİL KİLİT MANTIĞI */
+                            (child as any).isLocked ? (
+                                <LockedFeatureDialog key={child.name} featureName={child.name}>
+                                    <button className="flex items-center justify-between w-full py-2 px-2 text-sm text-muted-foreground hover:text-foreground transition-colors text-left">
+                                        {child.name}
+                                        <Lock className="w-3 h-3 opacity-50" />
+                                    </button>
+                                </LockedFeatureDialog>
+                            ) : (
+                                <Link
+                                key={child.name}
+                                to={child.path}
+                                className="flex items-center justify-between py-2 px-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                                >
+                                {child.name}
+                                </Link>
+                            )
                           ))}
                         </div>
                       )}
@@ -172,21 +239,21 @@ export function Header() {
                   ) : (
                     <Link
                       to={item.path}
-                      className="block py-2 text-muted-foreground hover:text-foreground transition-colors"
+                      className="block px-4 py-3 font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
                     >
                       {item.name}
                     </Link>
                   )}
                 </div>
               ))}
-              <div className="flex flex-col gap-2 pt-4 border-t border-border mt-2">
+              <div className="flex flex-col gap-2 pt-4 border-t border-border mt-2 px-2">
                 <Link
                   to="/signin"
-                  className="py-2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="w-full py-2 text-center text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Sign In
                 </Link>
-                <Link to="/signup" className="btn-primary text-center">
+                <Link to="/signup" className="w-full py-2 rounded-md bg-primary text-primary-foreground text-center font-medium">
                   Sign Up
                 </Link>
               </div>
@@ -197,3 +264,81 @@ export function Header() {
     </header>
   );
 }
+
+// ------------------------------------------------------------------
+// COMPONENTS
+// ------------------------------------------------------------------
+
+// 1. Reusable Alert Dialog Wrapper (Kod tekrarını azaltmak için)
+const LockedFeatureDialog = ({ children, featureName }: { children: React.ReactNode, featureName: string }) => {
+    return (
+        <AlertDialog>
+            <AlertDialogTrigger asChild>
+                {children}
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle className="flex items-center gap-2">
+                        <Lock className="w-5 h-5 text-primary" />
+                        Login Required
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                        You need to sign in to access <strong>{featureName}</strong>. 
+                        <br />
+                        Join DOU360 to explore the campus in 3D, find empty classrooms, and manage your schedule.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction asChild>
+                        <Link to="/signin">Sign In</Link>
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    );
+};
+
+// 2. Desktop ListItem (Updated with Lock Logic)
+const ListItem = ({ className, title, children, href, isLocked, icon, ...props }: any) => {
+    const content = (
+        <div className={cn(
+            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground group cursor-pointer",
+            className
+          )}
+          {...props}
+        >
+          <div className="flex items-center gap-2 text-sm font-medium leading-none">
+             {icon && <span className="mr-1">{icon}</span>}
+             {title}
+             {isLocked && <Lock className="w-3 h-3 text-muted-foreground group-hover:text-primary transition-colors" />}
+          </div>
+          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground mt-1.5 opacity-80">
+            {children}
+          </p>
+        </div>
+    );
+
+    // Kilitliyse Alert Dialog render et, değilse Link render et
+    if (isLocked) {
+        return (
+            <li>
+                <NavigationMenuLink asChild>
+                    <LockedFeatureDialog featureName={title}>
+                        {content}
+                    </LockedFeatureDialog>
+                </NavigationMenuLink>
+            </li>
+        );
+    }
+
+    return (
+        <li>
+            <NavigationMenuLink asChild>
+                <Link to={href} className="block">
+                    {content}
+                </Link>
+            </NavigationMenuLink>
+        </li>
+    );
+};
