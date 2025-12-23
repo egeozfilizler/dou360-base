@@ -1,55 +1,66 @@
 import { Link } from "react-router-dom";
-import { Facebook, Twitter, Instagram, Linkedin, Mail, MapPin, Phone } from "lucide-react";
+import { 
+  Twitter, 
+  Instagram, 
+  Linkedin, 
+  Mail, 
+  MapPin, 
+  Phone, 
+  Github
+} from "lucide-react";
 
 const footerLinks = {
-  company: [
-    { name: "About Us", path: "/#about" },
-    { name: "Services", path: "/#services" },
+  platform: [
+    { name: "Home", path: "/#hero" },
+    { name: "Features", path: "/#features" },
+    { name: "Roadmap", path: "/#roadmap" },
     { name: "Team", path: "/#team" },
-    { name: "Pricing", path: "/#pricing" },
   ],
-  resources: [
-    { name: "Blog", path: "/blog" },
-    { name: "Documentation", path: "#" },
-    { name: "Support", path: "#" },
-    { name: "Contact", path: "/#contact" },
+  university: [
+    { name: "Student Info (OBS)", path: "https://obs.dogus.edu.tr/" },
+    { name: "Main Library", path: "https://kutuphane.dogus.edu.tr/" },
+    { name: "Dining Menu", path: "#" },
+    { name: "Academic Calendar", path: "https://www.dogus.edu.tr/akademik-takvim" },
   ],
   legal: [
     { name: "Privacy Policy", path: "#" },
     { name: "Terms of Service", path: "#" },
-    { name: "Cookie Policy", path: "#" },
   ],
 };
 
 const socialLinks = [
-  { icon: Facebook, href: "#", label: "Facebook" },
-  { icon: Twitter, href: "#", label: "Twitter" },
+  { icon: Github, href: "https://github.com/dou360", label: "GitHub" },
   { icon: Instagram, href: "#", label: "Instagram" },
   { icon: Linkedin, href: "#", label: "LinkedIn" },
+  { icon: Twitter, href: "#", label: "Twitter" },
 ];
 
 export function Footer() {
+  const currentYear = new Date().getFullYear();
+
   return (
-    <footer className="bg-card border-t border-border">
-      <div className="container-custom section-padding">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
+    <footer className="border-t border-border bg-background/50 backdrop-blur-sm">
+      <div className="container-custom section-padding pb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-12 mb-16">
+          
           {/* Brand Column */}
           <div className="lg:col-span-2">
-            <Link to="/" className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-lg">B</span>
-              </div>
-              <span className="font-outfit font-bold text-xl text-foreground">Base</span>
+            <Link to="/" className="flex items-center gap-2 mb-6 group">
+              <span className="font-outfit font-bold text-2xl text-foreground tracking-tight">
+                DOU360
+              </span>
             </Link>
-            <p className="text-muted-foreground mb-6 max-w-sm">
-              We help businesses grow with modern solutions and exceptional service. Our team is dedicated to your success.
+            <p className="text-muted-foreground mb-8 max-w-sm leading-relaxed">
+              An open-source digital twin project developed by engineering students to revolutionize the campus experience at Doğuş University.
             </p>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               {socialLinks.map((social) => (
                 <a
                   key={social.label}
                   href={social.href}
-                  className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-white transition-all duration-300 hover:-translate-y-1"
                   aria-label={social.label}
                 >
                   <social.icon className="w-5 h-5" />
@@ -58,35 +69,37 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Company Links */}
+          {/* Platform Links */}
           <div>
-            <h4 className="font-outfit font-semibold text-foreground mb-4">Company</h4>
-            <ul className="space-y-3">
-              {footerLinks.company.map((link) => (
+            <h4 className="font-outfit font-bold text-foreground mb-6">Platform</h4>
+            <ul className="space-y-4">
+              {footerLinks.platform.map((link) => (
                 <li key={link.name}>
-                  <Link
-                    to={link.path}
-                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  <a
+                    href={link.path}
+                    className="text-muted-foreground hover:text-primary transition-colors text-sm font-medium"
                   >
                     {link.name}
-                  </Link>
+                  </a>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Resources Links */}
+          {/* University Links */}
           <div>
-            <h4 className="font-outfit font-semibold text-foreground mb-4">Resources</h4>
-            <ul className="space-y-3">
-              {footerLinks.resources.map((link) => (
+            <h4 className="font-outfit font-bold text-foreground mb-6">University</h4>
+            <ul className="space-y-4">
+              {footerLinks.university.map((link) => (
                 <li key={link.name}>
-                  <Link
-                    to={link.path}
-                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  <a
+                    href={link.path}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground hover:text-primary transition-colors text-sm font-medium"
                   >
                     {link.name}
-                  </Link>
+                  </a>
                 </li>
               ))}
             </ul>
@@ -94,28 +107,29 @@ export function Footer() {
 
           {/* Contact Info */}
           <div>
-            <h4 className="font-outfit font-semibold text-foreground mb-4">Contact</h4>
-            <ul className="space-y-3">
-              <li className="flex items-start gap-3 text-muted-foreground">
-                <MapPin className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                <span>123 Business Street, Suite 100, New York, NY 10001</span>
+            <h4 className="font-outfit font-bold text-foreground mb-6">Contact</h4>
+            <ul className="space-y-4">
+              <li className="flex items-start gap-3 text-muted-foreground text-sm group">
+                <span className="leading-relaxed">
+                  Dudullu Campus<br />
+                  Sanayi Mah. Nato Yolu Cad.<br />
+                  34775 Ümraniye / İstanbul
+                </span>
               </li>
               <li>
                 <a
-                  href="mailto:hello@base.com"
-                  className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors"
+                  href="mailto:info@dou360.app"
+                  className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors text-sm group"
                 >
-                  <Mail className="w-5 h-5 flex-shrink-0" />
-                  <span>hello@base.com</span>
+                  <span>info@dou360.app</span>
                 </a>
               </li>
               <li>
                 <a
-                  href="tel:+1234567890"
-                  className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors"
+                  href="tel:+904447997"
+                  className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors text-sm group"
                 >
-                  <Phone className="w-5 h-5 flex-shrink-0" />
-                  <span>+1 (234) 567-890</span>
+                  <span>444 7 997</span>
                 </a>
               </li>
             </ul>
@@ -123,19 +137,29 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-muted-foreground text-sm">
-            © {new Date().getFullYear()} Base. All rights reserved.
-          </p>
-          <div className="flex items-center gap-6">
+        <div className="pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="text-center md:text-left">
+            <p className="text-muted-foreground text-sm">
+              © {currentYear} DOU360. Open Source Project.
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+             <span>Designed & Developed by</span>
+             <Link to="/#team" className="font-bold text-foreground hover:text-primary transition-colors">
+                Doğuş University Engineering Students
+             </Link>
+          </div>
+
+          <div className="flex items-center gap-6 hidden md:flex">
             {footerLinks.legal.map((link) => (
-              <Link
+              <a
                 key={link.name}
-                to={link.path}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                href={link.path}
+                className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
                 {link.name}
-              </Link>
+              </a>
             ))}
           </div>
         </div>

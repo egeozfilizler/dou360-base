@@ -8,8 +8,7 @@ import { Roadmap } from "@/components/sections/Roadmap";
 import { Projects } from "@/components/sections/Projects";
 import { Testimonials } from "@/components/sections/Testimonials";
 import { Counter } from "@/components/sections/Counter";
-import { Clients } from "@/components/sections/Clients";
-import { BlogPreview } from "@/components/sections/BlogPreview";
+import { Integrations } from "@/components/sections/Integrations";
 import { Contact } from "@/components/sections/Contact";
 
 const Index = () => {
@@ -24,8 +23,7 @@ const Index = () => {
       <Roadmap />
       <Testimonials />
       <Counter />
-      <Clients />
-      <BlogPreview />
+      <Integrations />
       <Contact />
     </Layout>
   );
