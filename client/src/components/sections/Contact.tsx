@@ -101,10 +101,10 @@ export function Contact() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-zinc-300 ml-1">Name</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Name"
+                      <input
+                        type="text"
+                        required
+                        placeholder="Name"
                       value={formData.name}
                       onChange={(e) => setFormData({...formData, name: e.target.value})}
                       className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all placeholder:sm:text-zinc-600 placeholder:text-transparent"
@@ -112,10 +112,10 @@ export function Contact() {
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-zinc-300 ml-1">Student Email</label>
-                    <input
-                      type="email"
-                      required
-                      placeholder="Email"
+                      <input
+                        type="email"
+                        required
+                        placeholder="Email"
                       value={formData.email}
                       onChange={(e) => setFormData({...formData, email: e.target.value})}
                       className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all placeholder:sm:text-zinc-600 placeholder:text-transparent"
@@ -145,10 +145,10 @@ export function Contact() {
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-zinc-300 ml-1">Message</label>
-                  <textarea
-                    required
-                    rows={4}
-                    placeholder="Describe the issue or your idea in detail..."
+                    <textarea
+                      required
+                      rows={4}
+                      placeholder=""
                     value={formData.message}
                     onChange={(e) => setFormData({...formData, message: e.target.value})}
                     className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all placeholder:sm:text-zinc-600"

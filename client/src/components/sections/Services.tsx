@@ -99,7 +99,7 @@ export function Services() {
   const [hovered, setHovered] = useState<number | null>(null);
 
   return (
-    <section id="features" className="py-20 lg:py-12 relative">
+    <section id="features" className="py-12 lg:py-12 relative">
       <div className="container-custom">
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-16 animate-fade-in">

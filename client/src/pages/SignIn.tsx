@@ -14,11 +14,11 @@ const SignIn = () => {
             <form className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2">Email</label>
-                <input type="email" className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary" placeholder="you@example.com" />
+                <input type="email" className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Password</label>
-                <input type="password" className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary" placeholder="••••••••" />
+                <input type="password" className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
               <div className="flex items-center justify-between text-sm">
                 <label className="flex items-center gap-2"><input type="checkbox" className="rounded" /> Remember me</label>

@@ -34,9 +34,9 @@ const navItems = [
     name: "Portals",
     path: "#",
     children: [
-      { name: "University Website", path: "/#university-website", description: "Official website of Dogus University." },
-      { name: "OBS", path: "/#obs", description: "Student Information System." },
-      { name: "DouOnline", path: "/#douonline", description: "Distance learning platform." },
+      { name: "University Website", path: "https://www.dogus.edu.tr/", description: "Official website of Dogus University." },
+      { name: "OBS", path: "https://obs.dogus.edu.tr/", description: "Student Information System." },
+      { name: "DouOnline", path: "https://douonline.dogus.edu.tr/", description: "Distance learning platform." },
     ],
   },
   {
@@ -45,12 +45,11 @@ const navItems = [
     children: [
       { name: "Interactive 3D Navigation", path: "/#interactive-3d-navigation", isLocked: true },
       { name: "Live Availability", path: "/#live-availability", isLocked: true }, // İsim güncellendi
-      { name: "Faculty Finder", path: "/#faculty-finder", isLocked: true },
       { name: "Personalized Schedule", path: "/#personalized-schedule", isLocked: true },
       { name: "Smart Study Notes", path: "/#smart-study-notes", isLocked: true },
     ],
   },
-  { name: "Contact", path: "/#contact" },
+  { name: "Contact", path: "#contact" },
 ];
 
 export function Header() {
@@ -75,6 +74,15 @@ export function Header() {
 
   const cleanTriggerStyle = "bg-transparent hover:bg-transparent focus:bg-transparent data-[active]:bg-transparent data-[state=open]:bg-transparent text-muted-foreground hover:text-foreground data-[state=open]:text-foreground h-auto p-0 text-base font-normal shadow-none";
 
+  // Smooth scroll handler for Contact
+  const handleContactClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    e.preventDefault();
+    const section = document.getElementById("contact");
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -85,7 +93,7 @@ export function Header() {
     >
       <div className="container mx-auto px-4 md:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
-          {/* Logo */}
+          {/* Removed logo */}
           <Link to="/" className="flex items-center gap-2 z-50">
             <span className="font-outfit font-bold text-xl text-foreground tracking-tight">DOU360</span>
           </Link>
@@ -109,7 +117,7 @@ export function Header() {
                                 <NavigationMenuLink asChild>
                                   <Link
                                     className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md hover:bg-muted/80 transition-colors"
-                                    to="/#university-website"
+                                    to="https://www.dogus.edu.tr/"
                                   >
                                     <GraduationCap className="h-8 w-8 mb-4 text-primary" />
                                     <div className="mb-2 text-lg font-medium">
@@ -122,10 +130,10 @@ export function Header() {
                                 </NavigationMenuLink>
                               </li>
                               
-                              <ListItem href="/#obs" title="OBS" icon={<Globe className="w-4 h-4 text-muted-foreground" />}>
+                              <ListItem href="https://obs.dogus.edu.tr/" title="OBS" icon={<Globe className="w-4 h-4 text-muted-foreground" />}>
                                 Student Information System.
                               </ListItem>
-                              <ListItem href="/#douonline" title="DouOnline" icon={<BookOpen className="w-4 h-4 text-muted-foreground" />}>
+                              <ListItem href="https://douonline.dogus.edu.tr/" title="DouOnline" icon={<BookOpen className="w-4 h-4 text-muted-foreground" />}>
                                 Distance learning platform.
                               </ListItem>
                             </ul>
@@ -146,6 +154,17 @@ export function Header() {
                           )}
                         </NavigationMenuContent>
                       </>
+                    ) : item.name === "Contact" ? (
+                      <a
+                        href="#contact"
+                        onClick={handleContactClick}
+                        className={cn(navigationMenuTriggerStyle(), cleanTriggerStyle)}
+                        style={{ cursor: "pointer" }}
+                      >
+                        <NavigationMenuLink asChild>
+                          <span>{item.name}</span>
+                        </NavigationMenuLink>
+                      </a>
                     ) : (
                       <Link to={item.path}>
                         <NavigationMenuLink 
@@ -236,6 +255,24 @@ export function Header() {
                         </div>
                       )}
                     </div>
+                  ) : item.name === "Contact" ? (
+                    <a
+                      href="#contact"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setIsMobileMenuOpen(false);
+                        setTimeout(() => {
+                          const section = document.getElementById("contact");
+                          if (section) {
+                            section.scrollIntoView({ behavior: "smooth" });
+                          }
+                        }, 100);
+                      }}
+                      className="block px-4 py-3 font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
+                      style={{ cursor: "pointer" }}
+                    >
+                      {item.name}
+                    </a>
                   ) : (
                     <Link
                       to={item.path}

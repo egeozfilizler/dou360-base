@@ -50,7 +50,7 @@ const phases = [
   },
 ];
 
-// Teknoloji listesi güncellendi: Siyah logolar için 'invert' özelliği eklendi
+// Teknoloji listesi güncellendi
 const technologies = [
   { name: 'JavaScript', url: 'https://cdn.simpleicons.org/javascript/F7DF1E'},
   { name: 'TypeScript', url: 'https://cdn.simpleicons.org/typescript/3178C6' },

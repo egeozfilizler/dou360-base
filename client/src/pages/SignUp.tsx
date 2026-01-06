@@ -14,15 +14,15 @@ const SignUp = () => {
             <form className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2">Full Name</label>
-                <input type="text" className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary" placeholder="John Doe" />
+                <input type="text" className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Email</label>
-                <input type="email" className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary" placeholder="you@example.com" />
+                <input type="email" className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Password</label>
-                <input type="password" className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary" placeholder="••••••••" />
+                <input type="password" className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
               <label className="flex items-start gap-2 text-sm"><input type="checkbox" className="rounded mt-1" /><span className="text-muted-foreground">I agree to the <a href="#" className="text-primary hover:underline">Terms</a> and <a href="#" className="text-primary hover:underline">Privacy Policy</a></span></label>
               <button type="submit" className="w-full btn-primary">Create Account</button>

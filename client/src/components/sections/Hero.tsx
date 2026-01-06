@@ -65,7 +65,7 @@ export function Hero() {
             </div>
           </div>
 
-          {/* RIGHT CONTENT (Visual / 3D Placeholder) */}
+          {/* RIGHT CONTENT */}
           <div className="relative animate-fade-in lg:h-[600px] flex items-center" style={{ animationDelay: "0.2s" }}>
             <div className="relative w-full bg-gradient-to-br from-muted to-background border border-border rounded-3xl p-2 shadow-2xl transform lg:rotate-[-2deg] hover:rotate-0 transition-transform duration-500">
 
@@ -79,7 +79,7 @@ export function Hero() {
                 </div>
               </div>
 
-              {/* Main Content Area (Placeholder for 3D) */}
+              {/* Main Content Area */}
               <div className="mt-12 aspect-[4/3] lg:aspect-auto lg:h-[450px] bg-card/50 rounded-xl overflow-hidden relative group">
                 {/* Grid Pattern Background */}
                 <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
