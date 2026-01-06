@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Layout } from "@/components/Layout";
 import { Hero } from "@/components/sections/Hero";
 import { SmallFeatures } from "@/components/sections/SmallFeatures";
@@ -12,6 +14,16 @@ import { Integrations } from "@/components/sections/Integrations";
 import { Contact } from "@/components/sections/Contact";
 
 const Index = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    // Eğer token varsa, kullanıcıyı bekletmeden haritaya at
+    if (token) {
+      navigate("/map");
+    }
+  }, [navigate]);
+  
   return (
     <Layout>
       <Hero />

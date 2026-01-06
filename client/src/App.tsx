@@ -10,6 +10,7 @@ import BlogSingle from "./pages/BlogSingle";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import NotFound from "./pages/NotFound";
+import MapPage from "./pages/MapPage";
 
 import Contact from "./pages/Contact";
 
@@ -24,6 +25,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/map" element={<MapPage />} />
             <Route path="/blog" element={<BlogGrid />} />
             <Route path="/blog/:id" element={<BlogSingle />} />
             <Route path="/signin" element={<SignIn />} />
