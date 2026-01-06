@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 const SignIn = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [formData, setFormData] = useState({ identifier: "", password: "" });
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -51,8 +51,8 @@ const SignIn = () => {
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Email</label>
-                <input required type="email" onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
+                <label className="block text-sm font-medium mb-2">Email veya Kullanıcı Adı</label>
+                <input required type="text" onChange={(e) => setFormData({...formData, identifier: e.target.value})} className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Şifre</label>

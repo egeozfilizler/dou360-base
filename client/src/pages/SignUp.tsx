@@ -5,13 +5,20 @@ import { toast } from "sonner";
 
 const SignUp = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ fullName: "", email: "", password: "" });
+  const [formData, setFormData] = useState({ fullName: "",username:" ", email: "", password: "" });
   const [step, setStep] = useState<"info" | "verify">("info");
   const [userEnteredCode, setUserEnteredCode] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    // Eğer değişen input "username" ise özel karakterleri temizle
+    if (e.target.name === "username") {
+      const value = e.target.value.replace(/[^a-zA-Z0-9]/g, ""); 
+      setFormData({ ...formData, [e.target.name]: value });
+    } else {
+      // Diğer alanlar (fullName, email, password) normal çalışsın
+      setFormData({ ...formData, [e.target.name]: e.target.value });
+    }
   };
 
   const handleSendCode = async (e: React.FormEvent) => {
@@ -23,7 +30,10 @@ const SignUp = () => {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/send-code`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: formData.email }),
+        body: JSON.stringify({ 
+          email: formData.email,
+          password: formData.password 
+        }),
       });
 
       const data = await res.json();
@@ -83,6 +93,19 @@ const SignUp = () => {
                   <input required name="fullName" type="text" onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
                 </div>
                 <div>
+                  <label className="block text-sm font-medium mb-2">Kullanıcı Adı</label>
+                  <input 
+                    required 
+                    name="username" 
+                    type="text" 
+                    value={formData.username} 
+                    onChange={handleChange} 
+                    className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary" 
+
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Özel karakter ve boşluk içeremez.</p>
+                </div>
+                <div>
                   <label className="block text-sm font-medium mb-2">Okul Maili</label>
                   <input required name="email" type="email" onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
                 </div>
@@ -98,7 +121,7 @@ const SignUp = () => {
               <form onSubmit={handleVerifyAndRegister} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Doğrulama Kodu</label>
-                  <input required type="text" placeholder="XXXXXX" onChange={(e) => setUserEnteredCode(e.target.value)} className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary text-center tracking-widest text-xl" />
+                  <input required type="text" placeholder="XXXXXX" value={userEnteredCode} onChange={(e) => setUserEnteredCode(e.target.value)} className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary text-center tracking-widest text-xl" />
                 </div>
                 <button disabled={loading} type="submit" className="w-full btn-primary">
                   {loading ? "Kaydediliyor..." : "Kaydı Tamamla"}

@@ -18,9 +18,33 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// 1. ADIM: Mail Kontrolü ve Kod Gönderme
 router.post('/send-code', async (req, res) => {
-  const { email } = req.body;
+  const { email, password } = req.body;
+
+  const passwordRules = [
+    { 
+      condition: password.length < 6, 
+      message: 'Şifreniz minimum 6 karakter olmalıdır.' 
+    },
+    { 
+      condition: password.length > 22, 
+      message: 'Şifreniz maksimum 22 karakter olabilir.' 
+    },
+    { 
+      condition: /^(\d+|[a-z]+|[A-Z]+|[^a-zA-Z0-9]+)$/.test(password), 
+      message: 'Şifreniz güvenli değil.' 
+    }
+  ];
+
+  const failedRule = passwordRules.find(rule => rule.condition);
+  if (failedRule) {
+    return res.status(400).json({ message: failedRule.message });
+  }
+
+  const emailRegex = /^[a-zA-Z0-9]+@dogus\.edu\.tr$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ message: 'Lütfen geçerli bir Doğuş Üniversitesi mail adresi giriniz.' });
+  }
 
   try {
     // Domain Kontrolü (Test için yorum satırına alabilirsin)
@@ -64,30 +88,53 @@ router.post('/send-code', async (req, res) => {
 
 // 2. ADIM: Doğrulama ve Kayıt Olma
 router.post('/signup', async (req, res) => {
-  const { fullName, email, password, code } = req.body;
+  const { fullName, username, email, password, code } = req.body;
+  if (!username || /[^a-zA-Z0-9]/.test(username)) {
+    return res.status(400).json({ message: 'Kullanıcı adı boşluk veya özel karakter içeremez.' });
+  }
+  //  Şifre gereksinimlerinin kontrol etmesi
 
+  const passwordRules = [
+    { 
+      condition: password.length < 6, 
+      message: 'Şifreniz minimum 6 karakter olmalıdır.' 
+    },
+    { 
+      condition: password.length > 22, 
+      message: 'Şifreniz maksimum 22 karakter olabilir.' 
+    },
+    { 
+      condition: /^(\d+|[a-z]+|[A-Z]+|[^a-zA-Z0-9]+)$/.test(password), 
+      message: 'Şifreniz güvenli değil.' 
+    }
+  ];
+
+  const failedRule = passwordRules.find(rule => rule.condition);
+  if (failedRule) {
+    return res.status(400).json({ message: failedRule.message });
+  }
   try {
     // Veritabanındaki kodu kontrol et
     const record = await Verification.findOne({ email });
     
-    if (!record) {
-      return res.status(400).json({ message: 'Doğrulama kodu bulunamadı veya süresi dolmuş.' });
+    if (!record || record.code !== code) {
+      return res.status(400).json({ message: 'Hatalı veya süresi dolmuş doğrulama kodu.' });
     }
-
-    if (record.code !== code) {
-      return res.status(400).json({ message: 'Hatalı doğrulama kodu.' });
+    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+    
+    if (existingUser) {
+      if (existingUser.email === email) return res.status(400).json({ message: 'Bu email zaten kayıtlı.' });
+      if (existingUser.username === username) return res.status(400).json({ message: 'Bu kullanıcı adı zaten alınmış.' });
     }
 
     // Kod doğru, kullanıcıyı oluştur
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const newUser = new User({ fullName, email, password: hashedPassword });
+    const newUser = new User({ fullName, username, email, password: hashedPassword });
     await newUser.save();
 
-    // Kullanılan kodu sil
     await Verification.deleteOne({ email });
-
     res.status(201).json({ message: 'Kayıt başarılı.' });
 
   } catch (error) {
@@ -97,31 +144,40 @@ router.post('/signup', async (req, res) => {
 
 // Giriş Yapma (Aynen kalabilir)
 router.post('/signin', async (req, res) => {
-  const { email, password } = req.body;
+  // Frontend'den 'identifier' adında tek bir veri bekliyoruz
+  const { identifier, password } = req.body;
 
   try {
-    const user = await User.findOne({ email });
+    // Veritabanında (Email == identifier) VEYA (Username == identifier) olanı bul
+    const user = await User.findOne({ 
+      $or: [{ email: identifier }, { username: identifier }] 
+    });
+
     if (!user) return res.status(400).json({ message: 'Kullanıcı bulunamadı.' });
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: 'Şifre hatalı.' });
 
-    // --- JWT OLUŞTURMA KISMI ---
     const token = jwt.sign(
-      { id: user._id, email: user.email }, // Token içine gizlenecek bilgi
-      process.env.JWT_SECRET,             // Gizli anahtarımız
-      { expiresIn: '30d' }                // Token 30 gün geçerli olsun
+      { id: user._id, email: user.email }, 
+      process.env.JWT_SECRET,             
+      { expiresIn: '30d' }                
     );
 
-    // Frontend'e hem kullanıcıyı hem de token'ı gönderiyoruz
     res.status(200).json({ 
       message: 'Giriş başarılı', 
       token, 
-      user: { id: user._id, name: user.fullName, email: user.email } 
+      // Frontend'e hem fullName hem username dönebiliriz
+      user: { 
+        id: user._id, 
+        username: user.username, 
+        fullName: user.fullName, 
+        email: user.email 
+      } 
     });
 
   } catch (error) {
-    console.error(error); // Hata detayını görmek için
+    console.error(error);
     res.status(500).json({ message: 'Sunucu hatası.' });
   }
 });
