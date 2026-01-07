@@ -167,5 +167,72 @@ router.post('/signin', async (req, res) => {
     res.status(500).json({ message: 'Server error.' });
   }
 });
+  router.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
 
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found with this email.' });
+    }
+
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    await Verification.findOneAndDelete({ email }); 
+    await new Verification({ email, code }).save(); 
+
+    await transporter.sendMail({
+      from: process.env.SMTP_USER,
+      to: email,
+      subject: 'DOU360 Password Reset Code',
+      html: `
+        <h3>Password Reset Request</h3>
+        <p>Use the code below to reset your account password:</p>
+        <h1 style="color: #DC2626; letter-spacing: 5px;">${code}</h1>
+        <p>This code is valid for 10 minutes. Do not share it with anyone.</p>
+      `
+    });
+
+    res.status(200).json({ message: 'Verification code sent to your email.' });
+
+  } catch (error) {
+    console.error("Forgot Password Error:", error);
+    res.status(500).json({ message: 'Failed to send email. Please try again.' });
+  }
+});
+
+// 4. RESET PASSWORD (Verify Code & Set New Password)
+router.post('/reset-password', async (req, res) => {
+  const { email, code, newPassword } = req.body;
+
+  const passwordRules = [
+    { condition: !newPassword, message: 'Please enter a new password.' },
+    { condition: newPassword?.length < 6, message: 'Password is too short. Minimum 6 characters required.' },
+    { condition: newPassword?.length > 22, message: 'Password is too long. Maximum 22 characters allowed.' },
+    { condition: /^(\d+|[a-z]+|[A-Z]+|[^a-zA-Z0-9]+)$/.test(newPassword || ""), message: 'Password is too simple. Please mix letters, numbers, or symbols.' }
+  ];
+  
+  const failedRule = passwordRules.find(rule => rule.condition);
+  if (failedRule) return res.status(400).json({ message: failedRule.message });
+
+  try {
+    const record = await Verification.findOne({ email });
+    if (!record || record.code !== code) {
+      return res.status(400).json({ message: 'Invalid or expired verification code.' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    await User.findOneAndUpdate({ email }, { password: hashedPassword });
+
+    await Verification.deleteOne({ email });
+
+    res.status(200).json({ message: 'Password reset successfully. You can now sign in.' });
+
+  } catch (error) {
+    console.error("Reset Password Error:", error);
+    res.status(500).json({ message: 'An error occurred during password reset.' });
+  }
+});
 module.exports = router;

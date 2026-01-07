@@ -11,7 +11,7 @@ import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import NotFound from "./pages/NotFound";
 import MapPage from "./pages/MapPage";
-
+import ForgotPassword from "./pages/ForgotPassword";
 import Contact from "./pages/Contact";
 
 const queryClient = new QueryClient();
@@ -32,6 +32,7 @@ const App = () => (
             <Route path="/signup" element={<SignUp />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="*" element={<NotFound />} />
+            <Route path="/forgot-password" element={<ForgotPassword/>}/>
           </Routes>
         </BrowserRouter>
       </TooltipProvider>

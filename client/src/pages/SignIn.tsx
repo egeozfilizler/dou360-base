@@ -58,6 +58,9 @@ const SignIn = () => {
                 <label className="block text-sm font-medium mb-2">Password</label>
                 <input required type="password" onChange={(e) => setFormData({...formData, password: e.target.value})} className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
+              <div className="flex justify-end mt-1 mb-4">
+                <Link to="/forgot-password" className="text-xs text-muted-foreground hover:text-primary hover:underline">Forgot password?</Link>
+              </div>
               <button disabled={loading} type="submit" className="w-full btn-primary">
                 {loading ? "Signing in..." : "Sign In"}
               </button>
