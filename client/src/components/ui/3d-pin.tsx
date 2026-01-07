@@ -42,7 +42,7 @@ export const PinContainer = ({
           perspective: "1000px",
           transform: "rotateX(70deg) translateZ(0deg)",
         }}
-        // DÜZELTME: 'mt-4' ve 'ml-...' kaldırıldı. Artık tam merkezde.
+        // NOTE: Removed 'mt-4' and margin-left tweaks to keep it perfectly centered
         className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
       >
         <div
@@ -74,7 +74,7 @@ export const PinPerspective = ({
             perspective: "1000px",
             transform: "rotateX(70deg) translateZ(0)",
           }}
-          // DÜZELTME: 'mt-4' kaldırıldı.
+          // NOTE: Removed 'mt-4'
           className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
         >
           <>

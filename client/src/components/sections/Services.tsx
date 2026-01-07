@@ -45,7 +45,7 @@ const features = [
   },
 ];
 
-// Tekil Kart Bileşeni (FocusCards Mantığıyla Optimize Edildi)
+// Single card component (optimized with FocusCards logic)
 const FeatureCard = React.memo(
   ({
     feature,
@@ -63,9 +63,9 @@ const FeatureCard = React.memo(
       onMouseLeave={() => setHovered(null)}
       className={cn(
         "relative bg-card border border-border p-8 rounded-2xl transition-all duration-300 ease-out cursor-default",
-        // FOCUS EFFECT MANTIĞI BURADA:
-        // Eğer bir şeye odaklanılmışsa (hovered !== null) ve bu kart o değilse (hovered !== index):
-        // Bulanıklaştır (blur-sm), küçült (scale-[0.98]) ve soluklaştır (opacity-50).
+        // Focus effect logic:
+        // If something else is focused (hovered !== null) and this card is not it (hovered !== index):
+        // Apply blur, slight scale down, and reduce opacity.
         hovered !== null && hovered !== index 
           ? "blur-sm scale-[0.98] opacity-50 grayscale-[0.5]" 
           : "shadow-sm hover:shadow-2xl hover:border-primary/50 hover:-translate-y-1 opacity-100 scale-100"
@@ -95,7 +95,7 @@ const FeatureCard = React.memo(
 FeatureCard.displayName = "FeatureCard";
 
 export function Services() {
-  // Hangi kartın üzerinde olduğumuzu tutan state
+  // Tracks which card is hovered
   const [hovered, setHovered] = useState<number | null>(null);
 
   return (

@@ -35,14 +35,14 @@ const testimonials = [
 export function Testimonials() {
   const [current, setCurrent] = useState(0);
   
-  // --- YENİ: Dokunma hareketi için state'ler ---
+  // Touch gesture state
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
 
   const next = () => setCurrent((prev) => (prev + 1) % testimonials.length);
   const prev = () => setCurrent((prev) => (prev - 1 + testimonials.length) % testimonials.length);
 
-  // --- YENİ: Dokunma olaylarını yöneten fonksiyonlar ---
+  // Touch handlers
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStart(e.targetTouches[0].clientX);
   };
@@ -54,15 +54,15 @@ export function Testimonials() {
   const handleTouchEnd = () => {
     if (!touchStart || !touchEnd) return;
     const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > 50; // 50px'den fazla sola kaydırılırsa
-    const isRightSwipe = distance < -50; // 50px'den fazla sağa kaydırılırsa
+    const isLeftSwipe = distance > 50; // swipe more than 50px to the left
+    const isRightSwipe = distance < -50; // swipe more than 50px to the right
 
     if (isLeftSwipe) {
       next();
     } else if (isRightSwipe) {
       prev();
     }
-    // State'leri sıfırla
+    // Reset touch state
     setTouchStart(0);
     setTouchEnd(0);
   };
@@ -95,11 +95,11 @@ export function Testimonials() {
         {/* Testimonial Carousel */}
         <div className="max-w-4xl mx-auto relative">
           <div
-            // --- YENİ: Dokunma olayları eklendi ---
+            // Touch events added
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
-            // cursor-grab: Masaüstünde tutulabilir hissi verir
+            // cursor-grab provides a grab affordance on desktop
             className="relative bg-card border border-border rounded-3xl p-8 md:p-12 shadow-xl animate-fade-in touch-pan-y cursor-grab active:cursor-grabbing"
           >
             
@@ -139,13 +139,13 @@ export function Testimonials() {
                 </div>
             </div>
 
-            {/* YENİ: Mobil için Swipe İpucu */}
+            {/* Mobile swipe hint */}
             <div className="md:hidden absolute bottom-4 left-0 w-full text-center text-xs text-muted-foreground/50 animate-pulse pointer-events-none select-none">
               Swipe to navigate
             </div>
 
             {/* Navigation Buttons */}
-            {/* DÜZELTME: 'hidden md:flex' ile mobilde gizlendi */}
+            {/* Hidden on mobile via 'hidden md:flex' */}
             <div className="hidden md:flex items-center justify-between w-full absolute top-1/2 left-0 -translate-y-1/2 px-4 md:px-0 md:-ml-16 md:w-[calc(100%+8rem)] pointer-events-none">
               <button
                 onClick={prev}

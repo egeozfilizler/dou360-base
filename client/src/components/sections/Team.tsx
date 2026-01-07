@@ -41,8 +41,8 @@ export function Team() {
   ];
 
   return (
-    // DÜZENLEME: 'bg-muted/20' ve 'border-y' eklendi.
-    // SmallFeatures ile aynı stil dilini kullanıyor.
+    // Styling update: added 'bg-muted/20' and 'border-y'.
+    // Uses the same visual language as SmallFeatures.
     <section id="team" className="py-20 lg:py-18 bg-muted/20 border-y border-border">
       <div className="container-custom">
         {/* Header */}

@@ -1,24 +1,23 @@
 const mongoose = require('mongoose');
 
 const UserSchema = new mongoose.Schema({
-  fullName: { type: String, required: true },
   username: { 
     type: String, 
     required: true, 
     unique: true, 
     match: [
-      /^[a-zA-Z0-9]+$/, // Sadece harf ve rakam
-      'Kullanıcı adı sadece harf ve rakamlardan oluşabilir, boşluk içeremez.'
+      /^[a-zA-Z0-9]+$/, // Letters and numbers only
+      'Username can contain only letters and numbers and cannot include spaces.'
     ]
   },
   email: { 
     type: String, 
     required: true, 
     unique: true,
-    // Email formatı backend tarafında şemada da zorunlu kılınabilir
+    // Enforce Dogus University email format at the schema level
     match: [
       /^[a-zA-Z0-9]+@dogus\.edu\.tr$/, 
-      'Lütfen geçerli bir Doğuş Üniversitesi mail adresi giriniz.'
+      'Please enter a valid Dogus University email address.'
     ]
   },
   password: { type: String, required: true },

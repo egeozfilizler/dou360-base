@@ -24,17 +24,17 @@ const SignIn = () => {
         throw new Error(err.message);
       }
 
-      const data = await res.json(); // Backend'den gelen veriyi al
+      const data = await res.json();
       
-      // Token'ı ve kullanıcı bilgisini tarayıcıya kaydet
+      // Store token and user information in the browser
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
 
-      toast.success("Giriş başarılı!");
+      toast.success("Sign-in successful.");
       navigate("/map");
       
     } catch (error: any) {
-      toast.error(error.message || "Giriş yapılamadı.");
+      toast.error(error.message || "Unable to sign in.");
     } finally {
       setLoading(false);
     }
@@ -46,23 +46,23 @@ const SignIn = () => {
         <div className="container-custom">
           <div className="max-w-md mx-auto bg-card border border-border rounded-2xl p-8">
             <div className="text-center mb-8">
-              <h1 className="text-2xl font-bold mb-2">Tekrar Hoşgeldin</h1>
-              <p className="text-muted-foreground">Hesabına giriş yap</p>
+              <h1 className="text-2xl font-bold mb-2">Welcome Back</h1>
+              <p className="text-muted-foreground">Sign in to your account</p>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Email veya Kullanıcı Adı</label>
+                <label className="block text-sm font-medium mb-2">Email or Username</label>
                 <input required type="text" onChange={(e) => setFormData({...formData, identifier: e.target.value})} className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Şifre</label>
+                <label className="block text-sm font-medium mb-2">Password</label>
                 <input required type="password" onChange={(e) => setFormData({...formData, password: e.target.value})} className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
               <button disabled={loading} type="submit" className="w-full btn-primary">
-                {loading ? "Giriş Yapılıyor..." : "Giriş Yap"}
+                {loading ? "Signing in..." : "Sign In"}
               </button>
             </form>
-            <p className="text-center text-muted-foreground text-sm mt-6">Hesabın yok mu? <Link to="/signup" className="text-primary hover:underline">Kayıt ol</Link></p>
+            <p className="text-center text-muted-foreground text-sm mt-6">Don't have an account? <Link to="/signup" className="text-primary hover:underline">Sign up</Link></p>
           </div>
         </div>
       </section>

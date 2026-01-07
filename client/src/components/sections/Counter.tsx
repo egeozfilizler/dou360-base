@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useInView } from "motion/react";
 import { Users, MapPin, School, Layers } from "lucide-react";
 
-// İstatistik Verileri
+// Statistics data
 const stats = [
   { 
     value: 6500, 
@@ -36,7 +36,7 @@ const stats = [
   },
 ];
 
-// Sayma Animasyonu İçin Custom Hook
+// Custom hook-style component for counting animation
 function CounterItem({ item }: { item: typeof stats[0] }) {
   const [count, setCount] = useState(0);
   const ref = useRef(null);
@@ -93,17 +93,17 @@ export function Counter() {
   return (
     <section className="py-16 lg:py-16 bg-primary text-primary-foreground relative overflow-hidden">
       
-      {/* Arka Plan Deseni */}
+      {/* Background pattern */}
       <div className="absolute inset-0 opacity-10 pointer-events-none">
         <div className="absolute -top-24 -left-24 w-96 h-96 bg-white rounded-full blur-3xl"></div>
         <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-black rounded-full blur-3xl"></div>
       </div>
 
       <div className="container-custom relative z-10">
-        {/* DÜZELTME: 'divide-x divide-white/10' kaldırıldı. */}
+        {/* NOTE: Removed 'divide-x divide-white/10' to clean separators */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
           {stats.map((stat) => (
-            // DÜZELTME: Ara çizgileri oluşturan border mantığı kaldırıldı.
+            // NOTE: Removed border-based separators between items
             <div key={stat.label}>
                <CounterItem item={stat} />
             </div>

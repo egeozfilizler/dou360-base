@@ -5,8 +5,8 @@ import { cn } from "@/lib/utils";
 interface AutoScrollProps {
   children: React.ReactNode;
   className?: string;
-  duration?: number; // Saniye cinsinden tur süresi
-  gap?: number; // Piksel cinsinden boşluk
+  duration?: number; // Loop duration in seconds
+  gap?: number; // Gap in pixels
 }
 
 export function AutoScroll({ 
@@ -19,16 +19,16 @@ export function AutoScroll({
     <div 
       className={cn("flex overflow-hidden w-full select-none", className)}
       style={{ 
-          // Tailwind config dosyasındaki marquee animasyonu bu değişkenleri kullanıyor
+          // Marquee animation in tailwind config uses these variables
           "--gap": `${gap}px`, 
           "--duration": `${duration}s` 
       } as React.CSSProperties}
     >
-      {/* 1. Kopya */}
+      {/* First copy */}
       <div className="flex shrink-0 min-w-full items-center justify-around gap-[var(--gap)] animate-marquee">
         {children}
       </div>
-      {/* 2. Kopya (Sonsuz döngü illüzyonu için) */}
+      {/* Second copy (creates the infinite loop illusion) */}
       <div aria-hidden="true" className="flex shrink-0 min-w-full items-center justify-around gap-[var(--gap)] animate-marquee">
         {children}
       </div>

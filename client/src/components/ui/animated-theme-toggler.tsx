@@ -10,13 +10,13 @@ interface AnimatedThemeTogglerProps
 
 export const AnimatedThemeToggler = ({
   className,
-  duration = 400, // Daha akıcı bir his için süreyi biraz artırdım
+  duration = 400, // Slightly longer duration for smoother feel
   ...props
 }: AnimatedThemeTogglerProps) => {
   const [isDark, setIsDark] = useState(false)
   const buttonRef = useRef<HTMLButtonElement>(null)
 
-  // Sayfa yüklendiğinde temayı kontrol et
+  // Check the theme on page load
   useEffect(() => {
     // Check localStorage first, then fallback to class
     let isDarkTheme = false
@@ -35,7 +35,7 @@ export const AnimatedThemeToggler = ({
 
   const toggleTheme = useCallback(async () => {
     const isAppearanceTransition =
-      // @ts-ignore: Tarayıcı desteği kontrolü
+      // @ts-ignore: Browser support check
       document.startViewTransition &&
       !window.matchMedia("(prefers-reduced-motion: reduce)").matches
 
@@ -48,7 +48,7 @@ export const AnimatedThemeToggler = ({
       return
     }
 
-    // Buton koordinatlarını transition başlamadan ÖNCE al
+    // Capture button coordinates before starting the transition
     const button = buttonRef.current
     let x = 0
     let y = 0
@@ -64,7 +64,7 @@ export const AnimatedThemeToggler = ({
       )
     }
 
-    // View Transition Başlat
+    // Start view transition
     const transition = document.startViewTransition(async () => {
       flushSync(() => {
         setIsDark(newTheme)
@@ -73,10 +73,10 @@ export const AnimatedThemeToggler = ({
       })
     })
 
-    // DOM güncellendikten sonra animasyonu oynat
+    // Play animation after the DOM updates
     await transition.ready
 
-    // Animasyon
+    // Animation
     document.documentElement.animate(
       {
         clipPath: [
@@ -86,7 +86,7 @@ export const AnimatedThemeToggler = ({
       },
       {
         duration: duration,
-        easing: "ease-in-out", // Daha doğal bir geçiş eğrisi
+        easing: "ease-in-out", // More natural transition curve
         pseudoElement: "::view-transition-new(root)",
       }
     )

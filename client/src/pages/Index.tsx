@@ -18,7 +18,7 @@ const Index = () => {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    // Eğer token varsa, kullanıcıyı bekletmeden haritaya at
+    // If a token exists, redirect straight to the map
     if (token) {
       navigate("/map");
     }

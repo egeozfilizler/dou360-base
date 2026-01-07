@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { ExternalLink, MapPin } from "lucide-react";
 
-// Kategorileri kampüs alanlarına göre güncelledik
+// Categories are aligned with campus areas
 const categories = ["All", "Academic", "Social", "Labs", "Administrative"];
 
-// Projeler yerine Kampüs Mekanları
+// Campus locations instead of projects
 const locations = [
   {
     title: "Main Library",

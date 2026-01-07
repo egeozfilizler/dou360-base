@@ -68,7 +68,7 @@ export function Integrations() {
         {/* Integration Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
           {integrations.map((item, index) => (
-            // DÜZELTME: Her hücre için sabit yükseklik (h-48) ve tam merkezleme (flex center)
+            // NOTE: Fixed height (h-48) and full centering for each cell
             <div 
                 key={item.name} 
                 className="flex items-center justify-center h-48 relative" 
@@ -79,11 +79,11 @@ export function Integrations() {
                  <PinContainer 
                     title="OBS Entry" 
                     href={item.href}
-                    // PinContainer'ın kendisine de boyut verdik ki absolute içinde kaybolmasın
+                    // Give PinContainer its own dimensions to avoid collapsing inside absolute positioning
                     className="w-full h-full flex items-center justify-center"
                     containerClassName="w-36 h-32 flex items-center justify-center" 
                  >
-                    {/* İç Kart Tasarımı: Diğerleriyle AYNI boyut (w-36 h-32) ve stil */}
+                    {/* Inner card keeps the same size (w-36 h-32) and styling */}
                     <div className="flex flex-col items-center justify-center p-4 w-36 h-32 bg-card border border-primary/40 rounded-2xl shadow-[0_0_20px_-5px_rgba(var(--primary-rgb),0.3)]">
                         <div className="w-10 h-10 mb-2 bg-primary/10 rounded-full flex items-center justify-center text-primary animate-pulse">
                             <item.icon className="w-5 h-5" />

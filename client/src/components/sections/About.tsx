@@ -21,11 +21,10 @@ export function About() {
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center px-4">
 
           {/* LEFT SIDE: Terminal Simulation */}
-          {/* min-w-0: Flex/Grid child taşmasını önleyen kritik css kuralı */}
+          {/* min-w-0: Critical to prevent flex/grid child overflow */}
           <div className="order-2 lg:order-1 w-full min-w-0 flex justify-center items-center relative animate-fade-in delay-100">
 
-            {/* DÜZELTME: overflow-hidden ve rounded-xl ekledik. 
-                İçerik ne kadar uzun olursa olsun bu kutunun dışına taşamaz. */}
+            {/* FIX: Added overflow-hidden and rounded-xl to prevent any content overflow regardless of length. */}
             <div className="relative w-full sm:max-w-lg group rounded-xl">
 
               {/* Badge */}
@@ -40,13 +39,13 @@ export function About() {
                 </div>
               </div>
 
-              {/* Arka Plan Glow */}
+              {/* Background glow */}
               <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 to-blue-600/30 rounded-2xl blur-xl opacity-40 group-hover:opacity-60 transition-opacity duration-500"></div>
 
               {/* Terminal */}
-              {/* text-[10px]: Mobilde fontu biraz daha küçülttük ki sığsın. */}
-              {/* break-all: Linklerin satırı zorla kırmasını sağlar. */}
-              {/* whitespace-pre-wrap: Satır sonlarını korur ama uzun satırı böler. */}
+              {/* text-[10px]: Slightly smaller font on mobile to fit. */}
+              {/* break-all: Forces long links to wrap. */}
+              {/* whitespace-pre-wrap: Preserves line breaks while allowing long lines to wrap. */}
               <Terminal className="relative shadow-2xl border-white/10 bg-[#0c0c0c] text-slate-200 w-full z-10 overflow-hidden font-mono text-[10px] sm:text-base whitespace-pre-wrap break-all">
 
                 <TypingAnimation className="text-slate-300">

@@ -1,7 +1,7 @@
 import { Check, Rocket, Star, Zap, Calendar } from "lucide-react";
 import { AutoScroll } from "@/components/ui/auto-scroll";
 
-// Paketler yerine "Geliştirme Aşama"larını (Milestones) yazıyoruz
+// Milestones instead of package names
 const phases = [
   {
     name: "Phase 1: Foundation",
@@ -23,7 +23,7 @@ const phases = [
     status: "In Progress",
     date: "Q1 2026",
     description: "Adding real-time data layers and social features to the map.",
-    icon: Rocket, // Şu anki odak noktamız
+    icon: Rocket, // Current focus
     features: [
       "Live Occupancy Data (IoT)",
       "User Accounts & Saved Routes",
@@ -31,7 +31,7 @@ const phases = [
       "Friend Locator (Optional)",
       "Mobile App Beta Launch",
     ],
-    highlight: true, // Ortadaki kartı öne çıkaralım (Current Focus)
+    highlight: true, // Emphasize the middle card (current focus)
   },
   {
     name: "Phase 3: Intelligence",
@@ -50,20 +50,20 @@ const phases = [
   },
 ];
 
-// Teknoloji listesi güncellendi
+// Updated technology list
 const technologies = [
   { name: 'JavaScript', url: 'https://cdn.simpleicons.org/javascript/F7DF1E'},
   { name: 'TypeScript', url: 'https://cdn.simpleicons.org/typescript/3178C6' },
   { name: 'React', url: 'https://cdn.simpleicons.org/react/61DAFB' },
-  // DÜZELTME: Siyah renk kodu verildi ve invert özelliği açıldı
+  // NOTE: Provided black color code and enabled invert
   { name: 'Next.js', url: 'https://cdn.simpleicons.org/nextdotjs/000000', invert: true }, 
   { name: 'TailwindCSS', url: 'https://cdn.simpleicons.org/tailwindcss/06B6D4' },
-  // DÜZELTME: Siyah renk kodu verildi ve invert özelliği açıldı
+  // NOTE: Provided black color code and enabled invert
   { name: 'Three.js', url: 'https://cdn.simpleicons.org/threedotjs/000000', invert: true }, 
   { name: 'WebGL', url: 'https://cdn.simpleicons.org/webgl/990000', invert: true},
   { name: 'Node.js', url: 'https://cdn.simpleicons.org/nodedotjs/339933' },
   { name: 'Docker', url: 'https://cdn.simpleicons.org/docker/2496ED' },
-  // DÜZELTME: Siyah renk kodu verildi ve invert özelliği açıldı
+  // NOTE: Provided black color code and enabled invert
   { name: 'GitHub', url: 'https://cdn.simpleicons.org/github/181717', invert: true }, 
   { name: 'Figma', url: 'https://cdn.simpleicons.org/figma/F24E1E' },
   { name: 'Vite', url: 'https://cdn.simpleicons.org/vite/646CFF' },
@@ -96,7 +96,7 @@ export function Roadmap() {
               className={`relative bg-card border rounded-2xl p-8 flex flex-col animate-fade-in transition-all duration-300 ${
                 phase.highlight
                   ? "border-primary shadow-lg scale-105 z-10" // Highlight (Phase 2)
-                  : "border-border hover:border-primary/50" // Diğerleri
+                  : "border-border hover:border-primary/50" // Other phases
               }`}
               style={{ animationDelay: `${index * 0.15}s` }}
             >
@@ -146,7 +146,7 @@ export function Roadmap() {
           ))}
         </div>
 
-        {/* --- AUTO SCROLL (TEKNOLOJİLER) --- */}
+        {/* --- AUTO SCROLL (TECHNOLOGIES) --- */}
         <div className="border-t border-border pt-12">
             <div className="text-center mb-10">
                 <span className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">
@@ -159,18 +159,17 @@ export function Roadmap() {
                 <AutoScroll gap={60} duration={40} className="[&>div]:pr-[60px]">
                     {technologies.map((tech) => (
                         <div key={tech.name} className="flex flex-col items-center justify-center gap-3 group px-4">
-                             {/* İkon Kutusu */}
+                            {/* Icon container */}
                              <div className="w-16 h-16 bg-card border border-border rounded-2xl flex items-center justify-center shadow-sm group-hover:border-primary/50 transition-all duration-300">
                                 <img
                                     src={tech.url}
                                     alt={tech.name}
-                                    // DÜZELTME: tech.invert varsa dark:invert class'ı ekleniyor.
-                                    // Böylece Light modda Siyah, Dark modda Beyaz görünüyorlar.
+                                // NOTE: If tech.invert is set, add dark:invert so black icons flip in dark mode
                                     className={`h-8 w-8 object-contain grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300 ${tech.invert ? "dark:invert" : ""}`}
                                     loading="lazy"
                                 />
                              </div>
-                             {/* İsim */}
+                            {/* Name */}
                              <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">
                                 {tech.name}
                              </span>

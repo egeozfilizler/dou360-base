@@ -6,7 +6,7 @@ import {
   Search, 
   Navigation 
 } from "lucide-react";
-import { Marquee } from "@/components/ui/marquee"; // Dosya yoluna dikkat et
+  import { Marquee } from "@/components/ui/marquee"; // Mind the file path
 
 const features = [
   {
@@ -44,7 +44,7 @@ const features = [
 export function SmallFeatures() {
   return (
     <section className="py-8 border-y border-border bg-muted/20 overflow-hidden">
-      <div className="container-fluid px-0"> {/* Container-fluid ile tam genişlik */}
+      <div className="container-fluid px-0"> {/* Full width with container-fluid */}
         
         <Marquee pauseOnHover repeat={4} className="[--duration:40s]">
           {features.map((feature, index) => (

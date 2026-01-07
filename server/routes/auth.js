@@ -6,12 +6,9 @@ const Verification = require('../models/Verification');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
 
-console.log("Email User:", process.env.SMTP_USER); // Mail adresini basmalı
-console.log("Email Pass:", process.env.SMTP_PASS ? "Dolu" : "Boş"); // Şifreyi açık basma, "Dolu" yazsa yeter
-
-// Mail Gönderici Ayarları
+// Mail transport configuration
 const transporter = nodemailer.createTransport({
-  service: 'gmail', // Host ve Port yerine direkt servis ismini kullanıyoruz
+  service: 'gmail',
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
@@ -24,15 +21,15 @@ router.post('/send-code', async (req, res) => {
   const passwordRules = [
     { 
       condition: password.length < 6, 
-      message: 'Şifreniz minimum 6 karakter olmalıdır.' 
+      message: 'Password must be at least 6 characters.' 
     },
     { 
       condition: password.length > 22, 
-      message: 'Şifreniz maksimum 22 karakter olabilir.' 
+      message: 'Password can be at most 22 characters.' 
     },
     { 
       condition: /^(\d+|[a-z]+|[A-Z]+|[^a-zA-Z0-9]+)$/.test(password), 
-      message: 'Şifreniz güvenli değil.' 
+      message: 'Password is not secure.' 
     }
   ];
 
@@ -43,69 +40,63 @@ router.post('/send-code', async (req, res) => {
 
   const emailRegex = /^[a-zA-Z0-9]+@dogus\.edu\.tr$/;
   if (!emailRegex.test(email)) {
-    return res.status(400).json({ message: 'Lütfen geçerli bir Doğuş Üniversitesi mail adresi giriniz.' });
+    return res.status(400).json({ message: 'Please enter a valid Dogus University email address.' });
   }
 
   try {
-    // Domain Kontrolü (Test için yorum satırına alabilirsin)
-    // if (!email.endsWith('@dogus.edu.tr')) {
-    //   return res.status(400).json({ message: 'Sadece @dogus.edu.tr ile kayıt olunabilir.' });
-    // }
-
-    // Kullanıcı zaten var mı?
+    // Ensure the email is not already registered
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: 'Bu mail adresi zaten kayıtlı.' });
+      return res.status(400).json({ message: 'This email address is already registered.' });
     }
 
-    // 6 Haneli Kod Üret
+    // Generate 6-digit verification code
     const code = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Varsa eski kodu sil ve yenisini kaydet
+    // Replace any existing code and save the new one
     await Verification.findOneAndDelete({ email });
     await new Verification({ email, code }).save();
 
-    // Mail Gönder
+    // Send verification email
     await transporter.sendMail({
-      from: process.env.SMTP_USER, // Elastic Email'de onaylı mailin
+      from: process.env.SMTP_USER,
       to: email,
-      subject: 'DOU360 Doğrulama Kodu',
+      subject: 'DOU360 Verification Code',
       html: `
-        <h3>Hoşgeldiniz!</h3>
-        <p>DOU360 kayıt işleminiz için doğrulama kodunuz:</p>
+        <h3>Welcome!</h3>
+        <p>Your verification code for completing your DOU360 registration:</p>
         <h1 style="color: #4F46E5; letter-spacing: 5px;">${code}</h1>
-        <p>Bu kod 10 dakika süreyle geçerlidir.</p>
+        <p>This code is valid for 10 minutes.</p>
       `
     });
 
-    res.status(200).json({ message: 'Doğrulama kodu gönderildi.' });
+    res.status(200).json({ message: 'Verification code sent.' });
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Mail gönderilemedi. Lütfen tekrar deneyin.' });
+    res.status(500).json({ message: 'Email could not be sent. Please try again.' });
   }
 });
 
-// 2. ADIM: Doğrulama ve Kayıt Olma
+// Step 2: Verify code and sign up
 router.post('/signup', async (req, res) => {
-  const { fullName, username, email, password, code } = req.body;
+  const { username, email, password, code } = req.body;
   if (!username || /[^a-zA-Z0-9]/.test(username)) {
-    return res.status(400).json({ message: 'Kullanıcı adı boşluk veya özel karakter içeremez.' });
+    return res.status(400).json({ message: 'Username cannot contain spaces or special characters.' });
   }
-  //  Şifre gereksinimlerinin kontrol etmesi
 
   const passwordRules = [
     { 
       condition: password.length < 6, 
-      message: 'Şifreniz minimum 6 karakter olmalıdır.' 
+      message: 'Password must be at least 6 characters.' 
     },
     { 
       condition: password.length > 22, 
-      message: 'Şifreniz maksimum 22 karakter olabilir.' 
+      message: 'Password can be at most 22 characters.' 
     },
     { 
       condition: /^(\d+|[a-z]+|[A-Z]+|[^a-zA-Z0-9]+)$/.test(password), 
-      message: 'Şifreniz güvenli değil.' 
+      message: 'Password is not secure.' 
     }
   ];
 
@@ -114,49 +105,46 @@ router.post('/signup', async (req, res) => {
     return res.status(400).json({ message: failedRule.message });
   }
   try {
-    // Veritabanındaki kodu kontrol et
+    // Verify the code stored in the database
     const record = await Verification.findOne({ email });
     
     if (!record || record.code !== code) {
-      return res.status(400).json({ message: 'Hatalı veya süresi dolmuş doğrulama kodu.' });
+      return res.status(400).json({ message: 'Invalid or expired verification code.' });
     }
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     
     if (existingUser) {
-      if (existingUser.email === email) return res.status(400).json({ message: 'Bu email zaten kayıtlı.' });
-      if (existingUser.username === username) return res.status(400).json({ message: 'Bu kullanıcı adı zaten alınmış.' });
+      if (existingUser.email === email) return res.status(400).json({ message: 'This email is already registered.' });
+      if (existingUser.username === username) return res.status(400).json({ message: 'This username is already taken.' });
     }
 
-    // Kod doğru, kullanıcıyı oluştur
+    // Code is valid, create the user
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const newUser = new User({ fullName, username, email, password: hashedPassword });
+    const newUser = new User({ username, email, password: hashedPassword });
     await newUser.save();
 
     await Verification.deleteOne({ email });
-    res.status(201).json({ message: 'Kayıt başarılı.' });
+    res.status(201).json({ message: 'Registration successful.' });
 
   } catch (error) {
-    res.status(500).json({ message: 'Kayıt sırasında hata oluştu.' });
+    res.status(500).json({ message: 'An error occurred during registration.' });
   }
 });
 
-// Giriş Yapma (Aynen kalabilir)
 router.post('/signin', async (req, res) => {
-  // Frontend'den 'identifier' adında tek bir veri bekliyoruz
   const { identifier, password } = req.body;
 
   try {
-    // Veritabanında (Email == identifier) VEYA (Username == identifier) olanı bul
     const user = await User.findOne({ 
       $or: [{ email: identifier }, { username: identifier }] 
     });
 
-    if (!user) return res.status(400).json({ message: 'Kullanıcı bulunamadı.' });
+    if (!user) return res.status(400).json({ message: 'User not found.' });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: 'Şifre hatalı.' });
+    if (!isMatch) return res.status(400).json({ message: 'Incorrect password.' });
 
     const token = jwt.sign(
       { id: user._id, email: user.email }, 
@@ -165,20 +153,18 @@ router.post('/signin', async (req, res) => {
     );
 
     res.status(200).json({ 
-      message: 'Giriş başarılı', 
+      message: 'Sign-in successful', 
       token, 
-      // Frontend'e hem fullName hem username dönebiliriz
       user: { 
         id: user._id, 
         username: user.username, 
-        fullName: user.fullName, 
         email: user.email 
       } 
     });
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Sunucu hatası.' });
+    res.status(500).json({ message: 'Server error.' });
   }
 });
 

@@ -44,7 +44,7 @@ const navItems = [
     path: "#",
     children: [
       { name: "Interactive 3D Navigation", path: "/#interactive-3d-navigation", isLocked: true },
-      { name: "Live Availability", path: "/#live-availability", isLocked: true }, // İsim güncellendi
+          { name: "Live Availability", path: "/#live-availability", isLocked: true }, // Name updated
       { name: "Personalized Schedule", path: "/#personalized-schedule", isLocked: true },
       { name: "Smart Study Notes", path: "/#smart-study-notes", isLocked: true },
     ],
@@ -110,7 +110,7 @@ export function Header() {
                           {item.name}
                         </NavigationMenuTrigger>
                         <NavigationMenuContent>
-                          {/* PORTALS TASARIMI */}
+                          {/* PORTALS layout */}
                           {item.name === "Portals" ? (
                             <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
                               <li className="row-span-3">
@@ -138,7 +138,7 @@ export function Header() {
                               </ListItem>
                             </ul>
                           ) : (
-                            /* FEATURES TASARIMI (Kilitli Öğeler Burada) */
+                            /* FEATURES layout (locked items shown here) */
                             <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-[1fr_1fr]">
                               {item.children.map((child) => (
                                 <ListItem
@@ -234,7 +234,7 @@ export function Header() {
                       {mobileOpenDropdown === item.name && (
                         <div className="pl-4 pr-2 pb-2 flex flex-col gap-1 bg-accent/30 rounded-b-md mx-2">
                           {item.children.map((child) => (
-                            /* MOBİL KİLİT MANTIĞI */
+                            /* MOBILE lock logic */
                             (child as any).isLocked ? (
                                 <LockedFeatureDialog key={child.name} featureName={child.name}>
                                     <button className="flex items-center justify-between w-full py-2 px-2 text-sm text-muted-foreground hover:text-foreground transition-colors text-left">
@@ -306,7 +306,7 @@ export function Header() {
 // COMPONENTS
 // ------------------------------------------------------------------
 
-// 1. Reusable Alert Dialog Wrapper (Kod tekrarını azaltmak için)
+// 1. Reusable Alert Dialog Wrapper (reduces code repetition)
 const LockedFeatureDialog = ({ children, featureName }: { children: React.ReactNode, featureName: string }) => {
     return (
         <AlertDialog>
@@ -356,7 +356,7 @@ const ListItem = ({ className, title, children, href, isLocked, icon, ...props }
         </div>
     );
 
-    // Kilitliyse Alert Dialog render et, değilse Link render et
+      // If locked, render the Alert Dialog; otherwise render the Link
     if (isLocked) {
         return (
             <li>

@@ -18,7 +18,7 @@ export function Hero() {
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 animate-fade-in" style={{ animationDelay: "0.1s" }}>
               Navigate Campus in <br className="hidden lg:block" />
               Real-time 3D at
-              {/* pb-4 ekledik: Harf kuyruklarının (ğ, ş, y) kesilmesini önler */}
+              {/* Added pb-4 to prevent descenders from being clipped */}
               <LinkPreview url="https://www.dogus.edu.tr">
                 <span className="gradient-text block mt-2 pb-4 hover:opacity-80 transition-opacity duration-300"> Doğuş University </span>
               </LinkPreview>

@@ -16,9 +16,8 @@ export function Contact() {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simüle edilmiş gönderim
+    // Simulated submission
     setTimeout(() => {
-      console.log("Feedback sent:", formData);
       setIsSubmitting(false);
       setSubmitted(true);
       setFormData({ name: "", email: "", subject: "bug", message: "" });
@@ -29,22 +28,18 @@ export function Contact() {
   return (
     <section id="contact" className="py-20 lg:py-32 bg-muted/20">
       <div className="container-custom">
-        {/* GÜNCELLEME: Gradient Temaya Uygun Hale Getirildi.
-           Eski: from-primary via-purple-600 to-blue-600
-           Yeni: from-neutral-900 via-neutral-900 to-neutral-800 (Koyu Zemin) + Primary Border
-           Bu sayede beyaz yazılar her zaman okunur ve kırmızı renk vurgu olarak kullanılır.
-        */}
+        {/* UPDATE: Gradient adjusted to match the theme. Old: from-primary via-purple-600 to-blue-600. New: from-neutral-900 via-neutral-900 to-neutral-800 (dark base) with a primary border so white text stays legible and red is a highlight. */}
         <div className="relative bg-gradient-to-br from-zinc-900 via-zinc-900 to-zinc-950 border border-primary/20 rounded-[2.5rem] p-8 md:p-16 overflow-hidden shadow-2xl">
           
-          {/* --- Background Decor (Temaya Uygun Kırmızı Vurgular) --- */}
+          {/* --- Background decor (theme-aligned red accents) --- */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div 
-              // Rengi bg-primary/20 yaptık
+              // Color set to bg-primary/20
               className="absolute -top-32 -right-32 w-96 h-96 bg-primary/20 rounded-full blur-3xl transform-gpu will-change-transform"
               style={{ transform: 'translate3d(0,0,0)' }} 
             />
             <div 
-              // Rengi bg-primary/10 yaptık
+              // Color set to bg-primary/10
               className="absolute -bottom-32 -left-32 w-96 h-96 bg-primary/10 rounded-full blur-3xl transform-gpu will-change-transform"
               style={{ transform: 'translate3d(0,0,0)' }} 
             />
@@ -59,7 +54,7 @@ export function Contact() {
                 <span>Help us improve DOU360</span>
               </div>
               
-              {/* DÜZELTME: text-white sınıfı explicit olarak eklendi */}
+              {/* FIX: text-white added explicitly */}
               <h2 className="text-4xl md:text-5xl font-bold leading-tight text-white">
                 Spot a Bug or Have a <br />
                 <span className="text-primary">Brilliant Idea?</span>
@@ -75,7 +70,7 @@ export function Contact() {
                     <Bug className="w-5 h-5 text-primary group-hover:text-white" />
                   </div>
                   <div>
-                    {/* DÜZELTME: text-white eklendi */}
+                    {/* FIX: text-white added */}
                     <h4 className="font-semibold text-white">Report a Bug</h4>
                     <p className="text-sm text-zinc-400">Something not working right?</p>
                   </div>
@@ -86,7 +81,7 @@ export function Contact() {
                     <Lightbulb className="w-5 h-5 text-primary group-hover:text-white" />
                   </div>
                   <div>
-                    {/* DÜZELTME: text-white eklendi */}
+                    {/* FIX: text-white added */}
                     <h4 className="font-semibold text-white">Request a Feature</h4>
                     <p className="text-sm text-zinc-400">What should we build next?</p>
                   </div>
