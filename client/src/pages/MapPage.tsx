@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Layout } from "@/components/Layout";
 import { toast } from "sonner";
+import FloorMap from "@/components/FloorMap"; // <--- ENTEGRASYON BURADA
 
-// Simple user type
 interface User {
   id: string;
   name: string;
@@ -15,12 +14,10 @@ const MapPage = () => {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    // 1. Token and user check
     const token = localStorage.getItem('token');
     const savedUser = localStorage.getItem('user');
 
     if (!token) {
-      // If there is no token, redirect to sign-in
       navigate("/signin");
       return;
     }
@@ -31,67 +28,55 @@ const MapPage = () => {
   }, [navigate]);
 
   const handleLogout = () => {
-    // 2. Clear stored credentials
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    
-    toast.success("Signed out successfully.");
-    
-    // 3. Redirect to landing page
-    // Without a token, the Index page effect will not redirect
-    // and the user can see the landing page.
+    toast.success("Başarıyla çıkış yapıldı.");
     navigate("/");
   };
 
   return (
-    <Layout>
-      {/* Map and UI layer */}
-      <section className="relative w-full h-screen bg-neutral-100 overflow-hidden">
+    <div className="min-h-screen flex flex-col">
+      <section className="relative w-full h-screen bg-gray-50 overflow-hidden flex flex-col">
         
-        {/* Top info bar (overlay) */}
-        <div className="absolute top-24 left-1/2 -translate-x-1/2 z-10 w-full max-w-4xl px-4">
-          <div className="bg-white/80 backdrop-blur-md border border-white/20 shadow-lg rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        {/* Üst Bilgi Barı (Overlay) */}
+        {/* z-index'i yüksek tuttuk ki haritanın üstünde kalsın */}
+        <div className="absolute top-24 left-1/2 -translate-x-1/2 z-30 w-full max-w-4xl px-4 pointer-events-none">
+          <div className="bg-white/90 backdrop-blur-md border border-white/20 shadow-lg rounded-2xl p-4 md:p-6 flex flex-col md:flex-row items-center justify-between gap-4 pointer-events-auto">
             
-            {/* Left side: greeting */}
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">
-                Campus Map
-              </h1>
-              <p className="text-muted-foreground">
-                Welcome, <span className="font-semibold text-primary">{user?.name || "Student"}</span> 👋
+              <h1 className="text-2xl font-bold text-gray-800">Kampüs Haritası</h1>
+              <p className="text-muted-foreground text-sm">
+                Hoşgeldin, <span className="font-semibold text-primary">{user?.name || "Öğrenci"}</span> 👋
               </p>
             </div>
 
-            {/* Right side: actions */}
             <div className="flex items-center gap-3">
-              <button className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm">
-                My Profile
+              <button 
+                className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm"
+                onClick={() => toast.info("Profil sayfası yakında!")}
+              >
+                Profilim
               </button>
               
               <button 
                 onClick={handleLogout}
                 className="px-4 py-2 bg-red-50 text-red-600 border border-red-100 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors shadow-sm"
               >
-                Sign Out
+                Çıkış Yap
               </button>
             </div>
 
           </div>
         </div>
 
-        {/* 3D map area (placeholder) */}
-        <div className="w-full h-full flex items-center justify-center text-neutral-400">
-          <div className="text-center space-y-4">
-            <div className="w-24 h-24 bg-neutral-200 rounded-full mx-auto animate-pulse"></div>
-            <p className="text-xl font-medium">Loading 3D campus...</p>
-            <p className="text-sm max-w-md mx-auto">
-              Three.js / Canvas integration is coming here.
-            </p>
-          </div>
+        {/* --- HARİTA BİLEŞENİ --- */}
+        {/* Header'ın (pt-32) altında tüm alanı kaplayacak şekilde yerleştiriyoruz */}
+        <div className="flex-1 w-full h-full pt-0 relative z-0">
+           <FloorMap />
         </div>
 
       </section>
-    </Layout>
+    </div>
   );
 };
 

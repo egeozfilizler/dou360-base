@@ -65,7 +65,7 @@ router.post('/send-code', async (req, res) => {
       html: `
         <h3>Welcome!</h3>
         <p>Your verification code for completing your DOU360 registration:</p>
-        <h1 style="color: #4F46E5; letter-spacing: 5px;">${code}</h1>
+        <h1 style="color: #bd2d28; letter-spacing: 5px;">${code}</h1>
         <p>This code is valid for 10 minutes.</p>
       `
     });
