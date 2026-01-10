@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import FloorMap from "@/components/FloorMap";
 import { useMapInteraction } from "@/hooks/use-map-interaction";
 import { type Room } from "@/data/rooms";
+import { search, type SearchResult } from "@/lib/search";
 import { cn } from "@/lib/utils";
 import { 
   X, 
@@ -22,10 +23,13 @@ export default function MapPage() {
   const [currentFloor, setCurrentFloor] = useState(0);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchResult>(null);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Getting values from the hook
   const { transform, handleMouseDown, handleZoom, setTransform } = useMapInteraction();
-
   // Helper function to get current class for a room
   const getCurrentClass = (room: Room | null) => {
     if (!room || !room.schedule) return null;
@@ -54,6 +58,68 @@ export default function MapPage() {
     const currentDay = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(now);
     return room.schedule[currentDay] || [];
   };
+
+  // Handle search input change
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    
+    if (query.trim()) {
+      const results = search(query);
+      setSearchResults(results);
+      setShowSearchResults(!!results);
+    } else {
+      setSearchResults(null);
+      setShowSearchResults(false);
+    }
+  };
+
+  // Handle search result selection
+  const handleSearchResultClick = (result: SearchResult) => {
+    if (!result) return;
+
+    if (result.type === 'room') {
+      setSelectedRoom(result.room);
+      setCurrentFloor(result.room.floor);
+      setIsSidebarOpen(true);
+    } else if (result.type === 'teacher') {
+      // If teacher has multiple rooms, go to first room
+      if (result.rooms.length > 0) {
+        setSelectedRoom(result.rooms[0].room);
+        setCurrentFloor(result.rooms[0].room.floor);
+        setIsSidebarOpen(true);
+      }
+    } else if (result.type === 'subject') {
+      // If subject has multiple classes, go to first one
+      if (result.classes.length > 0) {
+        setSelectedRoom(result.classes[0].room);
+        setCurrentFloor(result.classes[0].room.floor);
+        setIsSidebarOpen(true);
+      }
+    } else if (result.type === 'teacher-subject') {
+      // If teacher+subject has multiple rooms, go to first room
+      if (result.rooms.length > 0) {
+        setSelectedRoom(result.rooms[0]);
+        setCurrentFloor(result.rooms[0].floor);
+        setIsSidebarOpen(true);
+      }
+    }
+
+    setShowSearchResults(false);
+    setSearchQuery("");
+  };
+
+  // Close search results when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchInputRef.current && !searchInputRef.current.contains(e.target as Node)) {
+        setShowSearchResults(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -115,13 +181,17 @@ export default function MapPage() {
       <div className="absolute inset-0 z-10 w-full h-full pointer-events-none">
         
         {/* Search Bar */}
-        <div className="absolute top-6 left-6 pointer-events-auto w-[360px] max-w-[calc(100vw-48px)]">
+        <div className="absolute top-6 left-6 pointer-events-auto w-[360px] max-w-[calc(100vw-48px)] relative">
             <div className="group flex w-full items-center rounded-xl bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all h-12 focus-within:w-[400px]">
                 <div className="flex items-center justify-center pl-4 pr-2 text-gray-400">
                     <Search size={20} />
                 </div>
                 <input 
+                    ref={searchInputRef}
                     type="text"
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    onFocus={() => searchQuery && setShowSearchResults(true)}
                     className="flex-1 bg-transparent border-none outline-none text-sm font-medium text-slate-900 placeholder:text-gray-400 h-full w-full"
                     placeholder="Search for classroom, lab or office..."
                 />
@@ -129,6 +199,97 @@ export default function MapPage() {
                     <span className="text-xs font-mono border border-gray-200 rounded px-1.5 py-0.5">/</span>
                 </div>
             </div>
+
+            {/* Search Results Dropdown */}
+            {showSearchResults && searchResults && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
+                {searchResults.type === 'room' && (
+                  <button
+                    onClick={() => handleSearchResultClick(searchResults)}
+                    className="w-full p-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-slate-900">Room {searchResults.room.id}</p>
+                        <p className="text-xs text-gray-500">Floor {searchResults.room.floor}</p>
+                      </div>
+                      {searchResults.currentSubject && (
+                        <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">In Progress</span>
+                      )}
+                    </div>
+                  </button>
+                )}
+
+                {searchResults.type === 'teacher' && (
+                  <>
+                    <div className="p-3 border-b border-gray-100">
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Teacher</p>
+                      <p className="text-sm font-semibold text-slate-900">{searchResults.teacher}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {searchResults.subjects.length} subject(s) • {searchResults.rooms.length} room(s)
+                        {searchResults.teacherRoom && ` • Teacher room - ${searchResults.teacherRoom.id}`}
+                      </p>
+                    </div>
+                    <div className="max-h-[200px] overflow-y-auto">
+                      {searchResults.rooms.map((roomWithSubjects) => (
+                        <button
+                          key={roomWithSubjects.room.id}
+                          onClick={() => handleSearchResultClick(searchResults)}
+                          className="w-full p-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors text-sm"
+                        >
+                          <p className="font-medium text-slate-900">Room {roomWithSubjects.room.id}</p>
+                          <p className="text-xs text-gray-500">Floor {roomWithSubjects.room.floor} • {roomWithSubjects.subjects.join(', ')}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {searchResults.type === 'subject' && (
+                  <>
+                    <div className="p-3 border-b border-gray-100">
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Subject</p>
+                      <p className="text-sm font-semibold text-slate-900">{searchResults.subject}</p>
+                      <p className="text-xs text-gray-500 mt-1">{searchResults.classes.length} class(es)</p>
+                    </div>
+                    <div className="max-h-[200px] overflow-y-auto">
+                      {searchResults.classes.map((cls, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => handleSearchResultClick(searchResults)}
+                          className="w-full p-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors text-sm"
+                        >
+                          <p className="font-medium text-slate-900">Room {cls.room.id} • {cls.day}</p>
+                          <p className="text-xs text-gray-500">{cls.time} • {cls.teacher}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {searchResults.type === 'teacher-subject' && (
+                  <>
+                    <div className="p-3 border-b border-gray-100">
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Teacher • Subject</p>
+                      <p className="text-sm font-semibold text-slate-900">{searchResults.teacher}</p>
+                      <p className="text-xs text-gray-500 mt-1">{searchResults.subject}</p>
+                    </div>
+                    <div className="max-h-[200px] overflow-y-auto">
+                      {searchResults.rooms.map((room) => (
+                        <button
+                          key={room.id}
+                          onClick={() => handleSearchResultClick(searchResults)}
+                          className="w-full p-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors text-sm"
+                        >
+                          <p className="font-medium text-slate-900">Room {room.id}</p>
+                          <p className="text-xs text-gray-500">Floor {room.floor}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
         </div>
 
 

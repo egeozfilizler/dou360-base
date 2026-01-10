@@ -2,10 +2,26 @@ export interface ScheduleItem {
   time: string;
   subject: string;
   teacher?: string;
+  room?: string;
 }
 
 export interface DaySchedule {
   [day: string]: ScheduleItem[];
+}
+
+export interface TeacherScheduleItem {
+  time: string;
+  subject: string;
+  id?: string;
+}
+
+export interface TeacherDaySchedule {
+  [day: string]: TeacherScheduleItem[];
+}
+
+export interface TeacherInfo {
+  name: string;
+  schedule: TeacherDaySchedule;
 }
 
 export interface Room {
@@ -14,7 +30,8 @@ export interface Room {
   name: string;
   x?: number;
   y?: number;
-  schedule: DaySchedule;
+  schedule?: DaySchedule;
+  teachers?: TeacherInfo[];
 }
 
 export interface FloorRooms {
@@ -85,14 +102,87 @@ const roomsData: FloorRooms = {
       }
     },
     { 
-      id: "304", floor: 3, name: "304", x: 410, y: 50,
-      schedule: {
-        Monday: [],
-        Tuesday: [],
-        Wednesday: [],
-        Thursday: [],
-        Friday: [],
-      }
+      id: "304", floor: 3, name: "304 - Teachers Lounge", x: 410, y: 50,
+      teachers: [
+        {
+          name: "Dr. A. Yılmaz",
+          schedule: {
+            Monday: [
+              { time: "09:00 - 09:50", subject: "Advanced Mathematics", id: "301" },
+              { time: "10:00 - 10:50", subject: "Advanced Mathematics", id: "301" },
+            ],
+            Tuesday: [],
+            Wednesday: [
+              { time: "09:00 - 09:50", subject: "Advanced Mathematics", id: "301" },
+            ],
+            Thursday: [],
+            Friday: [],
+          }
+        },
+        {
+          name: "Prof. E. Şahin",
+          schedule: {
+            Monday: [
+              { time: "13:00 - 13:50", subject: "Linear Algebra", id: "301" },
+            ],
+            Tuesday: [],
+            Wednesday: [
+              { time: "15:00 - 15:50", subject: "Linear Algebra", id: "301" },
+            ],
+            Thursday: [],
+            Friday: [],
+          }
+        },
+        {
+          name: "Dr. F. Koç",
+          schedule: {
+            Monday: [],
+            Tuesday: [
+              { time: "11:00 - 11:50", subject: "Calculus II", id: "301" },
+              { time: "14:00 - 14:50", subject: "Calculus II", id: "301" },
+            ],
+            Wednesday: [],
+            Thursday: [],
+            Friday: [
+              { time: "10:00 - 10:50", subject: "Calculus II", id: "301" },
+            ],
+          }
+        },
+        {
+          name: "Prof. B. Kaya",
+          schedule: {
+            Monday: [],
+            Tuesday: [
+              { time: "09:00 - 09:50", subject: "Physics I", id: "302" },
+              { time: "10:00 - 10:50", subject: "Physics I", id: "302" },
+            ],
+            Wednesday: [
+              { time: "13:00 - 13:50", subject: "Physics I", id: "302" },
+            ],
+            Thursday: [
+              { time: "11:00 - 11:50", subject: "Physics I", id: "302" },
+            ],
+            Friday: [],
+          }
+        },
+        {
+          name: "Dr. C. Demir",
+          schedule: {
+            Monday: [
+              { time: "10:00 - 10:50", subject: "Introduction to CS",  id: "303" },
+              { time: "11:00 - 11:50", subject: "Introduction to CS", id: "303" },
+            ],
+            Tuesday: [
+              { time: "13:00 - 13:50", subject: "Introduction to CS", id: "303" },
+            ],
+            Wednesday: [],
+            Thursday: [
+              { time: "09:00 - 09:50", subject: "Introduction to CS", id: "303" },
+            ],
+            Friday: [],
+          }
+        }
+      ]
     },
     { 
       id: "305", floor: 3, name: "305", x: 530, y: 50,

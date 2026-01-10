@@ -1,31 +1,19 @@
-import { roomSchedules, type ScheduleItem, type RoomSchedule, type TeacherSchedule, type RoomWithTeachers, type DaySchedule } from '@/data/room-schedules';
+import { getRoomsForFloor, findRoomById, type ScheduleItem, type Room, type DaySchedule } from '@/data/rooms';
 
 interface TeacherSearchResult {
   type: 'teacher';
   teacher: string;
   subjects: string[];
-  rooms: string[];
-  teacherRooms: string[];
+  rooms: Array<{
+    room: Room;
+    subjects: string[];
+  }>;
+  teacherRoom?: Room;
 }
-
-/**
- * Type guard to check if a room schedule has teachers
- */
-function isRoomWithTeachers(roomData: RoomSchedule): roomData is RoomWithTeachers {
-  return 'teachers' in roomData && Array.isArray((roomData as RoomWithTeachers).teachers);
-}
-
-/**
- * Type guard to check if a room schedule is a day schedule
- */
-function isDaySchedule(roomData: RoomSchedule): roomData is DaySchedule {
-  return !isRoomWithTeachers(roomData);
-}
-
 
 interface RoomSearchResult {
   type: 'room';
-  room: string;
+  room: Room;
   currentSubject: ScheduleItem | null;
   message?: string;
 }
@@ -34,14 +22,14 @@ interface TeacherSubjectSearchResult {
   type: 'teacher-subject';
   teacher: string;
   subject: string;
-  rooms: string[];
+  rooms: Room[];
 }
 
 interface SubjectSearchResult {
   type: 'subject';
   subject: string;
   classes: Array<{
-    room: string;
+    room: Room;
     teacher: string;
     time: string;
     day: string;
@@ -49,6 +37,17 @@ interface SubjectSearchResult {
 }
 
 type SearchResult = TeacherSearchResult | RoomSearchResult | TeacherSubjectSearchResult | SubjectSearchResult | null;
+
+/**
+ * Get all rooms across all floors
+ */
+function getAllRooms(): Room[] {
+  const allRooms: Room[] = [];
+  for (let floor = -2; floor <= 3; floor++) {
+    allRooms.push(...getRoomsForFloor(floor));
+  }
+  return allRooms;
+}
 
 /**
  * Get current day of the week
@@ -101,53 +100,59 @@ function matchesTeacherName(teacherName: string, searchQuery: string): boolean {
  */
 function searchByTeacher(teacherName: string): TeacherSearchResult | null {
   const subjects = new Set<string>();
-  const rooms = new Set<string>();
-  const teacherRooms = new Set<string>();
+  const roomSubjectsMap = new Map<string, Set<string>>();
   let foundTeacherFullName: string | null = null;
+  let teacherLoungeRoom: Room | undefined = undefined;
 
   // Search through all rooms
-  for (const [roomName, roomData] of Object.entries(roomSchedules)) {
-    // Check if room has teachers property (Room 2 format)
-    if (isRoomWithTeachers(roomData)) {
-      const teacher = roomData.teachers.find(
-        t => matchesTeacherName(t.name, teacherName)
-      );
+  const allRooms = getAllRooms();
+  
+  for (const room of allRooms) {
+    // Check if room is a teacher lounge with teachers array
+    if (room.teachers && Array.isArray(room.teachers)) {
+      const teacher = room.teachers.find(t => matchesTeacherName(t.name, teacherName));
       
       if (teacher) {
-        // Store the full name from the first match
         if (!foundTeacherFullName) {
           foundTeacherFullName = teacher.name;
         }
         
-        // This is a teacher room (lounge)
-        teacherRooms.add(roomName);
+        // Mark this as the teacher's lounge room
+        if (!teacherLoungeRoom) {
+          teacherLoungeRoom = room;
+        }
         
-        // Add all subjects from this teacher's schedule
+        // Add all subjects from this teacher's schedule and track which rooms they teach in
         Object.values(teacher.schedule).forEach(daySchedule => {
           daySchedule.forEach(item => {
             subjects.add(item.subject);
+            // If the teacher's schedule specifies a room, track the subject for that room
             if (item.room) {
-              rooms.add(item.room);
+              if (!roomSubjectsMap.has(item.room)) {
+                roomSubjectsMap.set(item.room, new Set());
+              }
+              roomSubjectsMap.get(item.room)!.add(item.subject);
             }
           });
         });
       }
-    } else {
-      // Regular room format (Room 1, 3, 4, 5)
-      Object.values(roomData).forEach(daySchedule => {
-        if (Array.isArray(daySchedule)) {
-          daySchedule.forEach(item => {
-            if (item.teacher && matchesTeacherName(item.teacher, teacherName)) {
-              // Store the full name from the first match
-              if (!foundTeacherFullName) {
-                foundTeacherFullName = item.teacher;
-              }
-              
-              subjects.add(item.subject);
-              rooms.add(roomName);
+    } else if (room.schedule) {
+      // Regular room format
+      Object.values(room.schedule).forEach(daySchedule => {
+        daySchedule.forEach(item => {
+          if (item.teacher && matchesTeacherName(item.teacher, teacherName)) {
+            if (!foundTeacherFullName) {
+              foundTeacherFullName = item.teacher;
             }
-          });
-        }
+            
+            subjects.add(item.subject);
+            // Track subject for this room
+            if (!roomSubjectsMap.has(room.id)) {
+              roomSubjectsMap.set(room.id, new Set());
+            }
+            roomSubjectsMap.get(room.id)!.add(item.subject);
+          }
+        });
       });
     }
   }
@@ -156,12 +161,21 @@ function searchByTeacher(teacherName: string): TeacherSearchResult | null {
     return null;
   }
 
+  // Build the rooms array with their subjects
+  const roomsWithSubjects = Array.from(roomSubjectsMap.entries()).map(([roomId, subjectsSet]) => {
+    const room = findRoomById(roomId);
+    return room ? {
+      room,
+      subjects: Array.from(subjectsSet)
+    } : null;
+  }).filter((item): item is { room: Room; subjects: string[] } => item !== null);
+
   return {
     type: 'teacher',
-    teacher: foundTeacherFullName, // Return full name instead of search query
+    teacher: foundTeacherFullName,
     subjects: Array.from(subjects),
-    rooms: Array.from(rooms),
-    teacherRooms: Array.from(teacherRooms)
+    rooms: roomsWithSubjects,
+    teacherRoom: teacherLoungeRoom
   };
 }
 
@@ -170,45 +184,49 @@ function searchByTeacher(teacherName: string): TeacherSearchResult | null {
  */
 function searchBySubject(subjectName: string): SubjectSearchResult | null {
   const classes: Array<{
-    room: string;
+    room: Room;
     teacher: string;
     time: string;
     day: string;
   }> = [];
 
   // Search through all rooms
-  for (const [roomName, roomData] of Object.entries(roomSchedules)) {
-    // Check if room has teachers property (Room 2 format)
-    if (isRoomWithTeachers(roomData)) {
-      roomData.teachers.forEach(teacher => {
+  const allRooms = getAllRooms();
+  
+  for (const room of allRooms) {
+    // Check if room is a teacher lounge with teachers array
+    if (room.teachers && Array.isArray(room.teachers)) {
+      room.teachers.forEach(teacher => {
         Object.entries(teacher.schedule).forEach(([day, daySchedule]) => {
           daySchedule.forEach(item => {
             if (item.subject.toLowerCase() === subjectName.toLowerCase()) {
-              classes.push({
-                room: item.room || roomName,
-                teacher: teacher.name,
-                time: item.time,
-                day: day
-              });
+              // For teacher lounges, use the room specified in the schedule item
+              const classRoom = item.room ? findRoomById(item.room) : room;
+              if (classRoom) {
+                classes.push({
+                  room: classRoom,
+                  teacher: teacher.name,
+                  time: item.time,
+                  day: day
+                });
+              }
             }
           });
         });
       });
-    } else {
+    } else if (room.schedule) {
       // Regular room format
-      Object.entries(roomData).forEach(([day, daySchedule]) => {
-        if (Array.isArray(daySchedule)) {
-          daySchedule.forEach(item => {
-            if (item.subject.toLowerCase() === subjectName.toLowerCase()) {
-              classes.push({
-                room: roomName,
-                teacher: item.teacher || 'Unknown',
-                time: item.time,
-                day: day
-              });
-            }
-          });
-        }
+      Object.entries(room.schedule).forEach(([day, daySchedule]) => {
+        daySchedule.forEach(item => {
+          if (item.subject.toLowerCase() === subjectName.toLowerCase()) {
+            classes.push({
+              room: room,
+              teacher: item.teacher || 'Unknown',
+              time: item.time,
+              day: day
+            });
+          }
+        });
       });
     }
   }
@@ -227,8 +245,8 @@ function searchBySubject(subjectName: string): SubjectSearchResult | null {
 /**
  * Search for current subject in a room based on current date/time
  */
-function searchByRoom(roomName: string): RoomSearchResult | null {
-  const room = roomSchedules[roomName];
+function searchByRoom(roomId: string): RoomSearchResult | null {
+  const room = findRoomById(roomId);
   
   if (!room) {
     return null;
@@ -237,12 +255,11 @@ function searchByRoom(roomName: string): RoomSearchResult | null {
   const currentDay = getCurrentDay();
   const currentTime = getCurrentTime();
 
-  // Check if room has teachers property (Room 2 format)
-  if (isRoomWithTeachers(room)) {
-    // For rooms with teachers format, check all teachers' schedules
+  // Check if room is a teacher lounge with teachers array
+  if (room.teachers && Array.isArray(room.teachers)) {
     for (const teacher of room.teachers) {
       const daySchedule = teacher.schedule[currentDay];
-      if (daySchedule) {
+      if (daySchedule && Array.isArray(daySchedule)) {
         const currentSubject = daySchedule.find(item => 
           isTimeInRange(currentTime, item.time)
         );
@@ -250,7 +267,7 @@ function searchByRoom(roomName: string): RoomSearchResult | null {
         if (currentSubject) {
           return {
             type: 'room',
-            room: roomName,
+            room: room,
             currentSubject: {
               ...currentSubject,
               teacher: teacher.name
@@ -259,10 +276,10 @@ function searchByRoom(roomName: string): RoomSearchResult | null {
         }
       }
     }
-  } else {
+  } else if (room.schedule) {
     // Regular room format
-    const daySchedule = room[currentDay];
-    if (Array.isArray(daySchedule)) {
+    const daySchedule = room.schedule[currentDay];
+    if (daySchedule && Array.isArray(daySchedule)) {
       const currentSubject = daySchedule.find(item => 
         isTimeInRange(currentTime, item.time)
       );
@@ -270,7 +287,7 @@ function searchByRoom(roomName: string): RoomSearchResult | null {
       if (currentSubject) {
         return {
           type: 'room',
-          room: roomName,
+          room: room,
           currentSubject
         };
       }
@@ -279,7 +296,7 @@ function searchByRoom(roomName: string): RoomSearchResult | null {
 
   return {
     type: 'room',
-    room: roomName,
+    room: room,
     currentSubject: null,
     message: 'No class scheduled at this time'
   };
@@ -289,19 +306,18 @@ function searchByRoom(roomName: string): RoomSearchResult | null {
  * Search for room by teacher and subject name
  */
 function searchByTeacherAndSubject(teacherName: string, subjectName: string): TeacherSubjectSearchResult | null {
-  const rooms = new Set<string>();
+  const roomsSet = new Set<Room>();
   let foundTeacherFullName: string | null = null;
 
   // Search through all rooms
-  for (const [roomName, roomData] of Object.entries(roomSchedules)) {
-    // Check if room has teachers property (Room 2 format)
-    if (isRoomWithTeachers(roomData)) {
-      const teacher = roomData.teachers.find(
-        t => matchesTeacherName(t.name, teacherName)
-      );
+  const allRooms = getAllRooms();
+  
+  for (const room of allRooms) {
+    // Check if room is a teacher lounge with teachers array
+    if (room.teachers && Array.isArray(room.teachers)) {
+      const teacher = room.teachers.find(t => matchesTeacherName(t.name, teacherName));
       
       if (teacher) {
-        // Store the full name from the first match
         if (!foundTeacherFullName) {
           foundTeacherFullName = teacher.name;
         }
@@ -310,45 +326,102 @@ function searchByTeacherAndSubject(teacherName: string, subjectName: string): Te
         Object.values(teacher.schedule).forEach(daySchedule => {
           daySchedule.forEach(item => {
             if (item.subject.toLowerCase() === subjectName.toLowerCase()) {
+              // Add the room where the class is held (if specified)
               if (item.room) {
-                rooms.add(item.room);
+                const classRoom = findRoomById(item.room);
+                if (classRoom) {
+                  roomsSet.add(classRoom);
+                }
               }
             }
           });
         });
       }
-    } else {
+    } else if (room.schedule) {
       // Regular room format
-      Object.values(roomData).forEach(daySchedule => {
-        if (Array.isArray(daySchedule)) {
-          daySchedule.forEach(item => {
-            if (
-              item.teacher && matchesTeacherName(item.teacher, teacherName) &&
-              item.subject.toLowerCase() === subjectName.toLowerCase()
-            ) {
-              // Store the full name from the first match
-              if (!foundTeacherFullName) {
-                foundTeacherFullName = item.teacher;
-              }
-              
-              rooms.add(roomName);
+      Object.values(room.schedule).forEach(daySchedule => {
+        daySchedule.forEach(item => {
+          if (
+            item.teacher && matchesTeacherName(item.teacher, teacherName) &&
+            item.subject.toLowerCase() === subjectName.toLowerCase()
+          ) {
+            if (!foundTeacherFullName) {
+              foundTeacherFullName = item.teacher;
             }
-          });
-        }
+            
+            roomsSet.add(room);
+          }
+        });
       });
     }
   }
 
-  if (rooms.size === 0 || !foundTeacherFullName) {
+  if (roomsSet.size === 0 || !foundTeacherFullName) {
     return null;
   }
 
   return {
     type: 'teacher-subject',
-    teacher: foundTeacherFullName, // Return full name instead of search query
+    teacher: foundTeacherFullName,
     subject: subjectName,
-    rooms: Array.from(rooms)
+    rooms: Array.from(roomsSet)
   };
+}
+
+/**
+ * Extract room ID from various query formats
+ */
+function extractRoomId(query: string): string | null {
+  // Remove common prefixes and normalize
+  const normalized = query.toLowerCase().trim();
+  
+  // Try direct match first (e.g., "304", "301")
+  const directMatch = query.trim().match(/^([0-9B\-]+)$/);
+  if (directMatch) {
+    return directMatch[1].toUpperCase();
+  }
+  
+  // Try to extract room ID from patterns like "room 304", "classroom 304", "The room 304"
+  const roomMatch = normalized.match(/(?:room|classroom|lounge)[\s:]*([0-9B\-]+)/i);
+  if (roomMatch) {
+    return roomMatch[1].toUpperCase();
+  }
+  
+  // Try to extract any number pattern at the end
+  const numberMatch = query.match(/([0-9B\-]+)\s*$/);
+  if (numberMatch) {
+    return numberMatch[1].toUpperCase();
+  }
+  
+  return null;
+}
+
+/**
+ * Find room by ID or name (partial match)
+ */
+function findRoomByIdOrName(query: string): Room | null {
+  const allRooms = getAllRooms();
+  const roomId = extractRoomId(query);
+  
+  if (!roomId) {
+    return null;
+  }
+  
+  // Try exact ID match first
+  const exactMatch = allRooms.find(room => room.id === roomId);
+  if (exactMatch) {
+    return exactMatch;
+  }
+  
+  // Try name match
+  const nameMatch = allRooms.find(room => 
+    room.name.toUpperCase().includes(roomId) || room.id.toUpperCase().includes(roomId)
+  );
+  if (nameMatch) {
+    return nameMatch;
+  }
+  
+  return null;
 }
 
 /**
@@ -372,15 +445,10 @@ export function search(query: string): SearchResult {
     }
   }
 
-  // Check if query is a room name
-  if (trimmedQuery.toLowerCase().startsWith('room')) {
-    const roomKey = Object.keys(roomSchedules).find(
-      key => key.toLowerCase() === trimmedQuery.toLowerCase()
-    );
-    
-    if (roomKey) {
-      return searchByRoom(roomKey);
-    }
+  // Check if query is a room ID or name
+  const room = findRoomByIdOrName(trimmedQuery);
+  if (room) {
+    return searchByRoom(room.id);
   }
 
   // Try teacher search
@@ -408,7 +476,8 @@ export {
   searchByTeacherAndSubject,
   searchBySubject,
   getCurrentDay,
-  getCurrentTime
+  getCurrentTime,
+  getAllRooms
 };
 
 export type {
