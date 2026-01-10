@@ -239,12 +239,23 @@ export default function MapPage() {
 
                 {searchResults.type === 'teacher' && (
                   <>
-                    <div className="p-3 border-b border-gray-100">
+                    <div
+                      className="p-3 border-b border-gray-100"
+                      role={searchResults.teacherRoom ? "button" : undefined}
+                      tabIndex={searchResults.teacherRoom ? 0 : -1}
+                      onClick={() => searchResults.teacherRoom && navigateToRoom(searchResults.teacherRoom)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          if (searchResults.teacherRoom) navigateToRoom(searchResults.teacherRoom);
+                        }
+                      }}
+                    >
                       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Teacher</p>
                       <p className="text-sm font-semibold text-slate-900">{searchResults.teacher}</p>
                       <p className="text-xs text-gray-500 mt-1">
                         {searchResults.subjects.length} subject(s) • {searchResults.rooms.length} room(s)
-                        {searchResults.teacherRoom && ` • Teacher room - ${searchResults.teacherRoom.id}`}
+                        {searchResults.teacherRoom && ` • Teacher room - ${searchResults.teacherRoom.id} (click to open)`}
                       </p>
                     </div>
                     <div className="max-h-[200px] overflow-y-auto">
