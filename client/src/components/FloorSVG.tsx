@@ -1,14 +1,14 @@
 import React, { useMemo, useRef } from 'react';
 
 interface FloorSVGProps {
-  svgContent: string; // Dosyadan gelen ham metin
+  svgContent: string; // Raw text from file
   onRoomClick: (roomId: string) => void;
 }
 
 const FloorSVG: React.FC<FloorSVGProps> = ({ svgContent, onRoomClick }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // SVG içeriğini işle: Gri alanları bul ve onlara sınıf/data ekle
+  // Process SVG content: Find gray areas and add class/data attributes
   const processedSVG = useMemo(() => {
     let roomCounter = 0;
     let processed = svgContent;
@@ -44,20 +44,20 @@ const FloorSVG: React.FC<FloorSVGProps> = ({ svgContent, onRoomClick }) => {
     return processed;
   }, [svgContent]);
 
-  // Tıklama Olayı (Event Delegation)
-  // Her path'e tek tek onClick eklemek yerine, kapsayıcıya ekleyip "Neye tıklandı?" diye bakıyoruz.
+  // Click event handler (Event Delegation)
+  // Instead of adding onClick to each path individually, we attach it to the container and check what was clicked.
   const handleClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
     
-    // Tıklanan şey bir "interactive room" mu?
+    // Was the clicked element an "interactive room"?
     if (target.classList.contains('room-interactive') || target.closest('.room-interactive')) {
       const el = target.classList.contains('room-interactive') ? target : target.closest('.room-interactive') as HTMLElement;
       const roomId = el.getAttribute('data-room-id');
       
       if (roomId) {
-        // Tıklanan odanın rengini geçici olarak değiştir (Geri bildirim)
-        el.style.fill = "#4F46E5"; // Primary renk
-        setTimeout(() => { el.style.fill = "#E4E4E4"; }, 300); // Geri al
+        // Temporarily change the clicked room's color (Feedback)
+        el.style.fill = "#c40e20"; // Primary color
+        setTimeout(() => { el.style.fill = "#E4E4E4"; }, 300); // Restore
         
         onRoomClick(roomId);
       }
@@ -69,7 +69,7 @@ const FloorSVG: React.FC<FloorSVGProps> = ({ svgContent, onRoomClick }) => {
       ref={containerRef}
       className="w-full h-full floor-svg-container"
       onClick={handleClick}
-      // HTML stringini güvenli bir şekilde React içine gömüyoruz
+      // Safely embed HTML string into React
       dangerouslySetInnerHTML={{ __html: processedSVG }}
     />
   );

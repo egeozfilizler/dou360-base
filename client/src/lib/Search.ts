@@ -1,4 +1,4 @@
-import { roomSchedules, type ScheduleItem, type RoomSchedule, type TeacherSchedule, type RoomWithTeachers, type DaySchedule } from '@/Data/room-schedules';
+import { roomSchedules, type ScheduleItem, type RoomSchedule, type TeacherSchedule, type RoomWithTeachers, type DaySchedule } from '@/data/room-schedules';
 
 interface TeacherSearchResult {
   type: 'teacher';

@@ -157,10 +157,10 @@
 }
 
 /* =========================================
-   PERFORMANS OPTİMİZASYONU (View Transitions)
+   PERFORMANCE OPTIMIZATION (View Transitions)
    ========================================= */
 
-/* 1. Varsayılan Cross-Fade Animasyonlarını Kapat */
+/* 1. Disable default cross-fade animations */
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;
@@ -169,27 +169,27 @@
   overflow: clip;
 }
 
-/* 2. KRİTİK PERFORMANS ÇÖZÜMÜ: 
-   Geçiş sırasında sayfadaki diğer animasyonları durdurur.
-   Hero alanındaki blur efektlerinin yarattığı render yükünü (filter: none) ile sıfırlar. 
-   Bu kod, "Hero.tsx" sayfasındaki yavaşlığı çözen kısımdır. */
+/* 2. CRITICAL PERFORMANCE FIX: 
+   Pauses other animations on the page during transitions.
+   Resets render load from Hero blur effects with (filter: none).
+   This code fixes performance issues on Hero.tsx. */
 ::view-transition-group(root) {
   animation-duration: 0s;
   backdrop-filter: none !important;
   filter: none !important;
 }
 
-/* 3. Katman Sıralaması ve GPU Hızlandırma */
+/* 3. Layer ordering and GPU acceleration */
 ::view-transition-new(root) {
-  z-index: 2147483646; /* En üstte olduğundan emin ol */
-  will-change: clip-path; /* GPU'ya bu işlemi önceliklendirmesini söyle */
+  z-index: 2147483646; /* Ensure it's on top */
+  will-change: clip-path; /* Tell GPU to prioritize this operation */
 }
 
 ::view-transition-old(root) {
   z-index: 1;
 }
 
-/* 4. Motion Reduce Tercihi Olanlar İçin */
+/* 4. Reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-group(*),
   ::view-transition-old(*),
@@ -239,8 +239,8 @@
   height: 100%;
 }
 
-/* Gri alanlar üzerine gelince */
+/* Hover effect on gray areas */
 .room-interactive:hover {
-  fill: #4F46E5 !important; /* Primary renk */
+  fill: hsl(var(--primary)) !important; /* Primary color */
   filter: drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.2));
 }

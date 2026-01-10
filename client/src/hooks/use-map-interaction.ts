@@ -6,20 +6,20 @@ interface Transform {
   y: number;
 }
 
-export const useMapInteraction = (initialScale = 0.3) => {
+export const useMapInteraction = (initialScale = 0.75) => {
   const [transform, setTransform] = useState<Transform>({ scale: initialScale, x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const startPos = useRef({ x: 0, y: 0 });
 
-  // Zoom İşlemleri
+  // Zoom operations
   const handleZoom = (delta: number) => {
     setTransform(prev => {
-      const newScale = Math.min(Math.max(prev.scale + delta, 0.6), 1.4); // Min 0.05x, Max 4x zoom
+      const newScale = Math.min(Math.max(prev.scale + delta, 0.55), 1.3); // Min 0.05x, Max 4x zoom
       return { ...prev, scale: newScale };
     });
   };
 
-  // Sürükleme Başlangıcı
+  // Drag start
   const handleMouseDown = (e: React.MouseEvent | React.TouchEvent) => {
     setIsDragging(true);
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
@@ -27,10 +27,10 @@ export const useMapInteraction = (initialScale = 0.3) => {
     startPos.current = { x: clientX - transform.x, y: clientY - transform.y };
   };
 
-  // Sürükleme Sırası
+  // Drag progress
   const handleMouseMove = (e: MouseEvent | TouchEvent) => {
     if (!isDragging) return;
-    e.preventDefault(); // Sayfanın kaymasını engelle
+    e.preventDefault(); // Prevent page scroll
     
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
@@ -42,7 +42,7 @@ export const useMapInteraction = (initialScale = 0.3) => {
     }));
   };
 
-  // Sürükleme Bitişi
+  // Drag end
   const handleMouseUp = () => setIsDragging(false);
 
   useEffect(() => {
