@@ -6,7 +6,7 @@ interface Transform {
   y: number;
 }
 
-export const useMapInteraction = (initialScale = 1) => {
+export const useMapInteraction = (initialScale = 0.3) => {
   const [transform, setTransform] = useState<Transform>({ scale: initialScale, x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const startPos = useRef({ x: 0, y: 0 });
@@ -14,7 +14,7 @@ export const useMapInteraction = (initialScale = 1) => {
   // Zoom İşlemleri
   const handleZoom = (delta: number) => {
     setTransform(prev => {
-      const newScale = Math.min(Math.max(prev.scale + delta, 1), 4); // Min 1x, Max 4x zoom
+      const newScale = Math.min(Math.max(prev.scale + delta, 0.1), 4); // Min 1x, Max 4x zoom
       return { ...prev, scale: newScale };
     });
   };
