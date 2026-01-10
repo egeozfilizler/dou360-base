@@ -339,72 +339,112 @@ export default function MapPage() {
                         </button>
                     </div>
                     {/* Dynamic Data from Schedule */}
-                    <div className="px-6 py-2">
-                        {currentClass ? (
-                          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-50 border border-red-100">
-                            <span className="relative flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                            </span>
-                            <span className="text-primary text-xs font-semibold uppercase tracking-wide">Class in Progress</span>
-                          </div>
-                        ) : (
-                          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-100">
-                            <span className="relative flex h-2 w-2 bg-blue-400 rounded-full"></span>
-                            <span className="text-blue-600 text-xs font-semibold uppercase tracking-wide">Available</span>
-                          </div>
-                        )}
-                    </div>
-                    <div className="p-6 pt-4">
-                        {currentClass ? (
-                          <div className="space-y-4">
-                            <div className="space-y-3">
-                              <div className="flex items-start justify-between">
-                                <div className="text-gray-400 text-xs font-medium uppercase tracking-wider">Current Class</div>
-                              </div>
-                              <div className="border-l-2 border-primary pl-3">
-                                <p className="text-slate-900 text-sm font-semibold">{currentClass.subject}</p>
-                                <p className="text-gray-500 text-xs mt-1">Instructor: {currentClass.teacher || "TBA"}</p>
-                                <p className="text-gray-500 text-xs flex items-center gap-1 mt-1"><Clock size={12} /> {currentClass.time}</p>
-                              </div>
-                            </div>
-                            {todayClasses.length > 1 && (
-                              <>
-                                <div className="h-px bg-gray-200/50 w-full" />
-                                <div className="space-y-2">
-                                  <div className="text-gray-400 text-xs font-medium uppercase tracking-wider">Today's Schedule</div>
+                    {selectedRoom.teachers && selectedRoom.teachers.length > 0 ? (
+                      <div className="p-6 pt-2 space-y-4">
+                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-100 text-amber-700 text-xs font-semibold uppercase tracking-wide">
+                          Teacher Lounge
+                        </div>
+                        <div className="space-y-4">
+                          {selectedRoom.teachers.map((teacher) => {
+                            const now = new Date();
+                            const currentDay = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(now);
+                            const today = teacher.schedule?.[currentDay] || [];
+                            return (
+                              <div key={teacher.name} className="border border-gray-100 rounded-lg p-3 bg-white/60">
+                                <div className="flex items-center justify-between mb-2">
+                                  <p className="text-sm font-semibold text-slate-900">{teacher.name}</p>
+                                  <p className="text-[11px] text-gray-500">Today</p>
+                                </div>
+                                {today.length > 0 ? (
                                   <div className="space-y-2">
-                                    {todayClasses.map((cls, idx) => (
-                                      <div key={idx} className="text-xs py-1">
-                                        <p className="text-slate-700 font-medium">{cls.time}</p>
-                                        <p className="text-gray-500">{cls.subject}</p>
+                                    {today.map((cls, idx) => (
+                                      <div key={`${teacher.name}-${idx}`} className="flex items-start justify-between text-xs">
+                                        <div className="text-slate-700 font-medium">{cls.time}</div>
+                                        <div className="text-right text-gray-600">
+                                          <div className="font-medium">{cls.subject}</div>
+                                          {cls.room && <div className="text-[11px] text-gray-500">Room {cls.room}</div>}
+                                        </div>
                                       </div>
                                     ))}
                                   </div>
-                                </div>
-                              </>
+                                ) : (
+                                  <p className="text-[11px] text-gray-400 italic">No classes today</p>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="px-6 py-2">
+                            {currentClass ? (
+                              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-50 border border-red-100">
+                                <span className="relative flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                                </span>
+                                <span className="text-primary text-xs font-semibold uppercase tracking-wide">Class in Progress</span>
+                              </div>
+                            ) : (
+                              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-100">
+                                <span className="relative flex h-2 w-2 bg-blue-400 rounded-full"></span>
+                                <span className="text-blue-600 text-xs font-semibold uppercase tracking-wide">Available</span>
+                              </div>
                             )}
-                          </div>
-                        ) : (
-                          <div className="space-y-4">
-                            <div className="text-gray-500 text-sm">
-                              <p className="font-medium mb-2">Today's Schedule:</p>
-                              {todayClasses.length > 0 ? (
-                                <div className="space-y-2">
-                                  {todayClasses.map((cls, idx) => (
-                                    <div key={idx} className="text-xs py-1">
-                                      <p className="text-slate-700 font-medium">{cls.time}</p>
-                                      <p className="text-gray-500">{cls.subject}</p>
-                                    </div>
-                                  ))}
+                        </div>
+                        <div className="p-6 pt-4">
+                            {currentClass ? (
+                              <div className="space-y-4">
+                                <div className="space-y-3">
+                                  <div className="flex items-start justify-between">
+                                    <div className="text-gray-400 text-xs font-medium uppercase tracking-wider">Current Class</div>
+                                  </div>
+                                  <div className="border-l-2 border-primary pl-3">
+                                    <p className="text-slate-900 text-sm font-semibold">{currentClass.subject}</p>
+                                    <p className="text-gray-500 text-xs mt-1">Instructor: {currentClass.teacher || "TBA"}</p>
+                                    <p className="text-gray-500 text-xs flex items-center gap-1 mt-1"><Clock size={12} /> {currentClass.time}</p>
+                                  </div>
                                 </div>
-                              ) : (
-                                <p className="text-gray-400 text-xs italic">No classes scheduled for today</p>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                    </div>
+                                {todayClasses.length > 1 && (
+                                  <>
+                                    <div className="h-px bg-gray-200/50 w-full" />
+                                    <div className="space-y-2">
+                                      <div className="text-gray-400 text-xs font-medium uppercase tracking-wider">Today's Schedule</div>
+                                      <div className="space-y-2">
+                                        {todayClasses.map((cls, idx) => (
+                                          <div key={idx} className="text-xs py-1">
+                                            <p className="text-slate-700 font-medium">{cls.time}</p>
+                                            <p className="text-gray-500">{cls.subject}</p>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="space-y-4">
+                                <div className="text-gray-500 text-sm">
+                                  <p className="font-medium mb-2">Today's Schedule:</p>
+                                  {todayClasses.length > 0 ? (
+                                    <div className="space-y-2">
+                                      {todayClasses.map((cls, idx) => (
+                                        <div key={idx} className="text-xs py-1">
+                                          <p className="text-slate-700 font-medium">{cls.time}</p>
+                                          <p className="text-gray-500">{cls.subject}</p>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <p className="text-gray-400 text-xs italic">No classes scheduled for today</p>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                        </div>
+                      </>
+                    )}
                     <div className="p-4 bg-gray-50/50 border-t border-gray-100 flex gap-3">
                         <button className="flex-1 bg-slate-900 hover:bg-black text-white text-sm font-medium py-2.5 px-4 rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2">
                             <Navigation size={18} /> Navigation
