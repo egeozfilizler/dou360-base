@@ -2,63 +2,87 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import FloorMap from "@/components/FloorMap";
 import { useMapInteraction } from "@/hooks/use-map-interaction";
+import { type Room } from "@/data/rooms";
 import { cn } from "@/lib/utils";
 import { 
-  Search, 
   X, 
   Navigation, 
   Share2, 
-  Plus, 
-  Minus, 
-  Compass, 
-  MapPin,
-  LogOut
+  LogOut,
+  User,
+  Clock,
+  Search,
+  Plus,
+  Minus,
+  MapPin
 } from "lucide-react";
 
 export default function MapPage() {
   const navigate = useNavigate();
   const [currentFloor, setCurrentFloor] = useState(0);
-  const [selectedRoom, setSelectedRoom] = useState<any | null>(null);
+  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Getting values from the hook
   const { transform, handleMouseDown, handleZoom, setTransform } = useMapInteraction();
 
+  // Helper function to get current class for a room
+  const getCurrentClass = (room: Room | null) => {
+    if (!room || !room.schedule) return null;
+
+    const now = new Date();
+    const currentDay = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(now);
+    const daySchedule = room.schedule[currentDay];
+
+    if (!daySchedule || daySchedule.length === 0) return null;
+
+    // Get current time in HH:MM format
+    const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+    // Find the current or next class
+    return daySchedule.find(item => {
+      const [startTime] = item.time.split(' - ');
+      return currentTime >= startTime;
+    }) || daySchedule[0];
+  };
+
+  // Helper function to get all classes for a room today
+  const getTodayClasses = (room: Room | null) => {
+    if (!room || !room.schedule) return [];
+
+    const now = new Date();
+    const currentDay = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(now);
+    return room.schedule[currentDay] || [];
+  };
+
   const handleLogout = () => {
-    // Clear authentication tokens
     localStorage.removeItem("token");
     sessionStorage.removeItem("token");
-    // Clear any auth-related cookies (if stored in localStorage)
     localStorage.removeItem("authToken");
     sessionStorage.removeItem("authToken");
-    // Navigate to signin
     navigate("/");
   };
 
-  // Bind zoom functions to handleZoom
   const handleZoomIn = () => handleZoom(0.2);
   const handleZoomOut = () => handleZoom(-0.2);
-  
-  // Wrapper function for mouse wheel zoom
+
   const onWheel = (e: React.WheelEvent) => {
-    // Upward scroll (zoom in) positive, downward negative
     const delta = e.deltaY < 0 ? 0.1 : -0.1;
     handleZoom(delta);
   };
 
-  const handleResetMap = () => {
-    setTransform({ scale: 0.75, x: 0, y: 0 });
-  };
-
-  const handleRoomClick = (roomData: any) => {
-    if (!roomData) return;
-    setSelectedRoom(roomData);
+  const handleRoomClick = (room: Room) => {
+    if (!room) return;
+    setSelectedRoom(room);
     setIsSidebarOpen(true);
   };
 
   const closeSidebar = () => {
     setIsSidebarOpen(false);
   };
+
+  const currentClass = selectedRoom ? getCurrentClass(selectedRoom) : null;
+  const todayClasses = selectedRoom ? getTodayClasses(selectedRoom) : [];
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-[#F5F5F5] font-sans text-slate-900">
@@ -125,24 +149,72 @@ export default function MapPage() {
                             <X size={20} />
                         </button>
                     </div>
-                    {/* Static Sample Data */}
+                    {/* Dynamic Data from Schedule */}
                     <div className="px-6 py-2">
-                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-50 border border-red-100">
+                        {currentClass ? (
+                          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-50 border border-red-100">
                             <span className="relative flex h-2 w-2">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
                             </span>
                             <span className="text-primary text-xs font-semibold uppercase tracking-wide">Class in Progress</span>
-                        </div>
+                          </div>
+                        ) : (
+                          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-100">
+                            <span className="relative flex h-2 w-2 bg-blue-400 rounded-full"></span>
+                            <span className="text-blue-600 text-xs font-semibold uppercase tracking-wide">Available</span>
+                          </div>
+                        )}
                     </div>
                     <div className="p-6 pt-4">
-                        <div className="grid grid-cols-[30%_1fr] gap-y-5 gap-x-4">
-                            <div className="text-gray-400 text-xs font-medium uppercase tracking-wider self-center">Capacity</div>
-                            <div className="text-slate-900 text-sm font-medium">45 People</div>
-                            <div className="col-span-2 h-px bg-gray-200/50 w-full" />
-                            <div className="text-gray-400 text-xs font-medium uppercase tracking-wider self-start pt-0.5">Equipment</div>
-                            <div className="text-slate-900 text-sm font-medium leading-relaxed">Projection, Smart Board</div>
-                        </div>
+                        {currentClass ? (
+                          <div className="space-y-4">
+                            <div className="space-y-3">
+                              <div className="flex items-start justify-between">
+                                <div className="text-gray-400 text-xs font-medium uppercase tracking-wider">Current Class</div>
+                              </div>
+                              <div className="border-l-2 border-primary pl-3">
+                                <p className="text-slate-900 text-sm font-semibold">{currentClass.subject}</p>
+                                <p className="text-gray-500 text-xs mt-1">Instructor: {currentClass.teacher || "TBA"}</p>
+                                <p className="text-gray-500 text-xs flex items-center gap-1 mt-1"><Clock size={12} /> {currentClass.time}</p>
+                              </div>
+                            </div>
+                            {todayClasses.length > 1 && (
+                              <>
+                                <div className="h-px bg-gray-200/50 w-full" />
+                                <div className="space-y-2">
+                                  <div className="text-gray-400 text-xs font-medium uppercase tracking-wider">Today's Schedule</div>
+                                  <div className="space-y-2">
+                                    {todayClasses.map((cls, idx) => (
+                                      <div key={idx} className="text-xs py-1">
+                                        <p className="text-slate-700 font-medium">{cls.time}</p>
+                                        <p className="text-gray-500">{cls.subject}</p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            <div className="text-gray-500 text-sm">
+                              <p className="font-medium mb-2">Today's Schedule:</p>
+                              {todayClasses.length > 0 ? (
+                                <div className="space-y-2">
+                                  {todayClasses.map((cls, idx) => (
+                                    <div key={idx} className="text-xs py-1">
+                                      <p className="text-slate-700 font-medium">{cls.time}</p>
+                                      <p className="text-gray-500">{cls.subject}</p>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-gray-400 text-xs italic">No classes scheduled for today</p>
+                              )}
+                            </div>
+                          </div>
+                        )}
                     </div>
                     <div className="p-4 bg-gray-50/50 border-t border-gray-100 flex gap-3">
                         <button className="flex-1 bg-slate-900 hover:bg-black text-white text-sm font-medium py-2.5 px-4 rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2">

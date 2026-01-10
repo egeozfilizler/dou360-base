@@ -1,12 +1,19 @@
 import React, { useMemo, useRef } from 'react';
+import { getRoomsForFloor } from '@/data/rooms';
 
 interface FloorSVGProps {
   svgContent: string; // Raw text from file
   onRoomClick: (roomId: string) => void;
+  floor: number;
 }
 
-const FloorSVG: React.FC<FloorSVGProps> = ({ svgContent, onRoomClick }) => {
+const FloorSVG: React.FC<FloorSVGProps> = ({ svgContent, onRoomClick, floor }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Get rooms for this floor
+  const floorsRooms = useMemo(() => {
+    return getRoomsForFloor(floor);
+  }, [floor]);
 
   // Process SVG content: Find gray areas and add class/data attributes
   const processedSVG = useMemo(() => {
@@ -34,15 +41,20 @@ const FloorSVG: React.FC<FloorSVGProps> = ({ svgContent, onRoomClick }) => {
       processed = processed.replace(/height="\d+"/i, 'height="100%"');
     }
     
-    // 4. Find gray areas (#E4E4E4) and add interactive classes (preserve existing logic)
+    // 4. Find gray areas (#E4E4E4) and add interactive classes with actual room IDs
     processed = processed.replace(/fill="#E4E4E4"/gi, (match) => {
+      const room = floorsRooms[roomCounter];
       roomCounter++;
-      // Keep original color but add class and data-id
-      return `${match} class="room-interactive cursor-pointer transition-all duration-200 hover:opacity-70" data-room-id="Room-${roomCounter}"`;
+      
+      if (room) {
+        // Use actual room ID from data
+        return `${match} class="room-interactive cursor-pointer transition-all duration-200 hover:opacity-70" data-room-id="${room.id}"`;
+      }
+      return match;
     });
 
     return processed;
-  }, [svgContent]);
+  }, [svgContent, floorsRooms]);
 
   // Click event handler (Event Delegation)
   // Instead of adding onClick to each path individually, we attach it to the container and check what was clicked.

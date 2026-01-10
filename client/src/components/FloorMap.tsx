@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import FloorSVG from "./FloorSVG";
+import { getRoomsForFloor, findRoomById, type Room } from "@/data/rooms";
 
 // Kat planlarını ham metin (raw) olarak çekiyoruz
 import floorMinus2Raw from "@/assets/floors/floor-minus-2.txt?raw";
@@ -11,7 +12,7 @@ import floor3Raw from "@/assets/floors/floor-3.txt?raw";
 
 interface FloorMapProps {
   floor: number;
-  onRoomClick?: (roomId: string) => void;
+  onRoomClick?: (room: Room) => void;
   highlightedRoomId?: string | null;
 }
 
@@ -30,14 +31,20 @@ export default function FloorMap({ floor, onRoomClick, highlightedRoomId }: Floo
     }
   }, [floor]);
 
+  // Handle room click with full room data
+  const handleRoomClick = (roomId: string) => {
+    const room = findRoomById(roomId);
+    if (room) {
+      onRoomClick?.(room);
+    }
+  };
+
   return (
     <div className="w-full h-full relative flex items-center justify-center">
-      {/* ESKİ KODLAR SİLİNDİ (Sidebar, Zoom butonları, Search vb.)
-          Artık sadece SVG çiziliyor.
-      */}
       <FloorSVG
         svgContent={svgContent}
-        onRoomClick={(id) => onRoomClick?.(id)}
+        floor={floor}
+        onRoomClick={handleRoomClick}
       />
     </div>
   );
