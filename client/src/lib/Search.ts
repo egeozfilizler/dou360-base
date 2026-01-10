@@ -375,22 +375,23 @@ function extractRoomId(query: string): string | null {
   // Remove common prefixes and normalize
   const normalized = query.toLowerCase().trim();
   
-  // Try direct match first (e.g., "304", "301")
-  const directMatch = query.trim().match(/^([0-9B\-]+)$/);
+  // Allow ground floor (G) and basement (B) prefixes in addition to numeric ids
+  const idPattern = "[0-9BG\\-]+";
+  const directMatch = query.trim().match(new RegExp(`^(${idPattern})$`, "i"));
   if (directMatch) {
     return directMatch[1].toUpperCase();
   }
   
-  // Try to extract room ID from patterns like "room 304", "classroom 304", "The room 304"
-  const roomMatch = normalized.match(/(?:room|classroom|lounge)[\s:]*([0-9B\-]+)/i);
+  // Try to extract room ID from patterns like "room G-02", "classroom 304", "The room B1-12"
+  const roomMatch = normalized.match(new RegExp(`(?:room|classroom|lounge)[\\s:]*(${idPattern})`, "i"));
   if (roomMatch) {
     return roomMatch[1].toUpperCase();
   }
   
-  // Try to extract any number pattern at the end
-  const numberMatch = query.match(/([0-9B\-]+)\s*$/);
-  if (numberMatch) {
-    return numberMatch[1].toUpperCase();
+  // Try to extract any matching pattern at the end
+  const trailingMatch = query.match(new RegExp(`(${idPattern})\\s*$`, "i"));
+  if (trailingMatch) {
+    return trailingMatch[1].toUpperCase();
   }
   
   return null;
