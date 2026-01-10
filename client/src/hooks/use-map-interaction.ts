@@ -14,7 +14,7 @@ export const useMapInteraction = (initialScale = 0.3) => {
   // Zoom İşlemleri
   const handleZoom = (delta: number) => {
     setTransform(prev => {
-      const newScale = Math.min(Math.max(prev.scale + delta, 0.1), 4); // Min 1x, Max 4x zoom
+      const newScale = Math.min(Math.max(prev.scale + delta, 0.6), 1.4); // Min 0.05x, Max 4x zoom
       return { ...prev, scale: newScale };
     });
   };

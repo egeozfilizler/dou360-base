@@ -11,15 +11,37 @@ const FloorSVG: React.FC<FloorSVGProps> = ({ svgContent, onRoomClick }) => {
   // SVG içeriğini işle: Gri alanları bul ve onlara sınıf/data ekle
   const processedSVG = useMemo(() => {
     let roomCounter = 0;
+    let processed = svgContent;
+
+    // 1. Extract original width and height from SVG tag
+    const widthMatch = processed.match(/width="(\d+)"/i);
+    const heightMatch = processed.match(/height="(\d+)"/i);
     
-    // 1. Gri alanları bul (#E4E4E4) ve değiştir
-    // Not: Regex, SVG içindeki fill="#E4E4E4" kısmını bulur ve içine class ekler.
-    return svgContent.replace(/fill="#E4E4E4"/gi, (match) => {
+    if (widthMatch && heightMatch) {
+      const width = widthMatch[1];
+      const height = heightMatch[1];
+      
+      // 2. Inject viewBox if missing
+      if (!processed.includes('viewBox')) {
+        processed = processed.replace(
+          /<svg/i,
+          `<svg viewBox="0 0 ${width} ${height}"`
+        );
+      }
+      
+      // 3. Replace fixed width/height with 100%
+      processed = processed.replace(/width="\d+"/i, 'width="100%"');
+      processed = processed.replace(/height="\d+"/i, 'height="100%"');
+    }
+    
+    // 4. Find gray areas (#E4E4E4) and add interactive classes (preserve existing logic)
+    processed = processed.replace(/fill="#E4E4E4"/gi, (match) => {
       roomCounter++;
-      // Orijinal rengi koru ama class ve data-id ekle
-      // "group" class'ı hover efektleri için, "room-interactive" tıklama için
+      // Keep original color but add class and data-id
       return `${match} class="room-interactive cursor-pointer transition-all duration-200 hover:opacity-70" data-room-id="Room-${roomCounter}"`;
     });
+
+    return processed;
   }, [svgContent]);
 
   // Tıklama Olayı (Event Delegation)
