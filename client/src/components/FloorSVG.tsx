@@ -1,14 +1,16 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { getRoomsForFloor } from '@/data/rooms';
 
 interface FloorSVGProps {
   svgContent: string; // Raw text from file
   onRoomClick: (roomId: string) => void;
   floor: number;
+  highlightedRoomId?: string | null;
 }
 
-const FloorSVG: React.FC<FloorSVGProps> = ({ svgContent, onRoomClick, floor }) => {
+const FloorSVG: React.FC<FloorSVGProps> = ({ svgContent, onRoomClick, floor, highlightedRoomId }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const lastHighlightedRef = useRef<HTMLElement | null>(null);
 
   // Get rooms for this floor
   const floorsRooms = useMemo(() => {
@@ -75,6 +77,30 @@ const FloorSVG: React.FC<FloorSVGProps> = ({ svgContent, onRoomClick, floor }) =
       }
     }
   };
+
+  // Highlight a specific room when requested (simulate hover/flash)
+  useEffect(() => {
+    // Clear previous highlight
+    if (lastHighlightedRef.current) {
+      const prevEl = lastHighlightedRef.current;
+      const prevFill = prevEl.getAttribute('data-prev-fill');
+      if (prevFill) prevEl.setAttribute('fill', prevFill);
+      prevEl.style.filter = '';
+      lastHighlightedRef.current = null;
+    }
+
+    if (!highlightedRoomId || !containerRef.current) return;
+
+    const el = containerRef.current.querySelector(`[data-room-id="${highlightedRoomId}"]`) as HTMLElement | null;
+    if (!el) return;
+
+    const prevFill = el.getAttribute('fill') || '#E4E4E4';
+    el.setAttribute('data-prev-fill', prevFill);
+    el.setAttribute('fill', '#c40e20');
+    el.style.filter = 'drop-shadow(0 0 8px rgba(196, 14, 32, 0.75))';
+
+    lastHighlightedRef.current = el;
+  }, [highlightedRoomId]);
 
   return (
     <div 

@@ -26,7 +26,9 @@ export default function MapPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult>(null);
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [highlightedRoomId, setHighlightedRoomId] = useState<string | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
 
   // Getting values from the hook
   const { transform, handleMouseDown, handleZoom, setTransform } = useMapInteraction();
@@ -59,6 +61,27 @@ export default function MapPage() {
     return room.schedule[currentDay] || [];
   };
 
+  // Navigate to a room: switch floor, flash/highlight, then open sidebar
+  const navigateToRoom = (room: Room) => {
+    console.log("Search click -> room", room.id, room.name);
+    setCurrentFloor(room.floor);
+    setHighlightedRoomId(room.id);
+
+    // Open sidebar shortly after floor change
+    setTimeout(() => {
+      setSelectedRoom(room);
+      setIsSidebarOpen(true);
+    }, 120);
+
+    // Clear highlight after a short pulse
+    setTimeout(() => {
+      setHighlightedRoomId(null);
+    }, 1800);
+
+    setShowSearchResults(false);
+    setSearchQuery("");
+  };
+
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
@@ -79,40 +102,33 @@ export default function MapPage() {
     if (!result) return;
 
     if (result.type === 'room') {
-      setSelectedRoom(result.room);
-      setCurrentFloor(result.room.floor);
-      setIsSidebarOpen(true);
+      navigateToRoom(result.room);
     } else if (result.type === 'teacher') {
       // If teacher has multiple rooms, go to first room
       if (result.rooms.length > 0) {
-        setSelectedRoom(result.rooms[0].room);
-        setCurrentFloor(result.rooms[0].room.floor);
-        setIsSidebarOpen(true);
+        navigateToRoom(result.rooms[0].room);
       }
     } else if (result.type === 'subject') {
       // If subject has multiple classes, go to first one
       if (result.classes.length > 0) {
-        setSelectedRoom(result.classes[0].room);
-        setCurrentFloor(result.classes[0].room.floor);
-        setIsSidebarOpen(true);
+        navigateToRoom(result.classes[0].room);
       }
     } else if (result.type === 'teacher-subject') {
       // If teacher+subject has multiple rooms, go to first room
       if (result.rooms.length > 0) {
-        setSelectedRoom(result.rooms[0]);
-        setCurrentFloor(result.rooms[0].floor);
-        setIsSidebarOpen(true);
+        navigateToRoom(result.rooms[0]);
       }
     }
 
-    setShowSearchResults(false);
-    setSearchQuery("");
   };
 
   // Close search results when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (searchInputRef.current && !searchInputRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      const insideInput = searchInputRef.current?.contains(target);
+      const insideContainer = searchContainerRef.current?.contains(target);
+      if (!insideInput && !insideContainer) {
         setShowSearchResults(false);
       }
     };
@@ -173,6 +189,7 @@ export default function MapPage() {
              <FloorMap 
                 floor={currentFloor} 
                 onRoomClick={handleRoomClick}
+               highlightedRoomId={highlightedRoomId}
              />
         </div>
       </div>
@@ -181,7 +198,7 @@ export default function MapPage() {
       <div className="absolute inset-0 z-10 w-full h-full pointer-events-none">
         
         {/* Search Bar */}
-        <div className="absolute top-6 left-6 pointer-events-auto w-[360px] max-w-[calc(100vw-48px)] relative">
+        <div ref={searchContainerRef} className="absolute top-6 left-6 pointer-events-auto w-[360px] max-w-[calc(100vw-48px)] relative">
             <div className="group flex w-full items-center rounded-xl bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all h-12 focus-within:w-[400px]">
                 <div className="flex items-center justify-center pl-4 pr-2 text-gray-400">
                     <Search size={20} />
@@ -205,8 +222,8 @@ export default function MapPage() {
               <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
                 {searchResults.type === 'room' && (
                   <button
-                    onClick={() => handleSearchResultClick(searchResults)}
-                    className="w-full p-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
+                    onClick={() => navigateToRoom(searchResults.room)}
+                      className="w-full p-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
                   >
                     <div className="flex items-center justify-between">
                       <div>
@@ -234,8 +251,8 @@ export default function MapPage() {
                       {searchResults.rooms.map((roomWithSubjects) => (
                         <button
                           key={roomWithSubjects.room.id}
-                          onClick={() => handleSearchResultClick(searchResults)}
-                          className="w-full p-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors text-sm"
+                          onClick={() => navigateToRoom(roomWithSubjects.room)}
+                            className="w-full p-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors text-sm"
                         >
                           <p className="font-medium text-slate-900">Room {roomWithSubjects.room.id}</p>
                           <p className="text-xs text-gray-500">Floor {roomWithSubjects.room.floor} • {roomWithSubjects.subjects.join(', ')}</p>
@@ -256,8 +273,8 @@ export default function MapPage() {
                       {searchResults.classes.map((cls, idx) => (
                         <button
                           key={idx}
-                          onClick={() => handleSearchResultClick(searchResults)}
-                          className="w-full p-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors text-sm"
+                          onClick={() => navigateToRoom(cls.room)}
+                            className="w-full p-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors text-sm"
                         >
                           <p className="font-medium text-slate-900">Room {cls.room.id} • {cls.day}</p>
                           <p className="text-xs text-gray-500">{cls.time} • {cls.teacher}</p>
@@ -278,8 +295,8 @@ export default function MapPage() {
                       {searchResults.rooms.map((room) => (
                         <button
                           key={room.id}
-                          onClick={() => handleSearchResultClick(searchResults)}
-                          className="w-full p-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors text-sm"
+                          onClick={() => navigateToRoom(room)}
+                            className="w-full p-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors text-sm"
                         >
                           <p className="font-medium text-slate-900">Room {room.id}</p>
                           <p className="text-xs text-gray-500">Floor {room.floor}</p>

@@ -45,6 +45,7 @@ export default function FloorMap({ floor, onRoomClick, highlightedRoomId }: Floo
         svgContent={svgContent}
         floor={floor}
         onRoomClick={handleRoomClick}
+        highlightedRoomId={highlightedRoomId}
       />
     </div>
   );
