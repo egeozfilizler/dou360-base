@@ -1,8 +1,9 @@
 import { useState, useMemo, useEffect } from "react";
 import { useMapInteraction } from "@/hooks/use-map-interaction"; 
 import { toast } from "sonner";
-import { ZoomIn, ZoomOut, Layers, MapPin } from "lucide-react";
+import { ZoomIn, ZoomOut, Layers, MapPin, Search as SearchIcon, X } from "lucide-react";
 import FloorSVG from "./FloorSVG";
+import { search, type SearchResult } from "@/lib/Search";
 
 import floorMinus2Raw from "@/assets/floors/floor-minus-2.txt?raw";
 import floorMinus1Raw from "@/assets/floors/floor-minus-1.txt?raw";
@@ -14,6 +15,10 @@ import floor3Raw from "@/assets/floors/floor-3.txt?raw";
 const FloorMap = () => {
   const [currentFloorId, setCurrentFloorId] = useState("1");
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResult, setSearchResult] = useState<SearchResult>(null);
+  const [showSearchResults, setShowSearchResults] = useState(false);
   
   // --- DÜZELTME BURADA ---
   // Eski hesaplamayı (4200px'e bölme işlemini) kaldırdık.
@@ -44,11 +49,187 @@ const FloorMap = () => {
     }
   };
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!searchQuery.trim()) {
+      setSearchResult(null);
+      setShowSearchResults(false);
+      return;
+    }
+
+    const result = search(searchQuery);
+    setSearchResult(result);
+    setShowSearchResults(true);
+
+    if (!result) {
+      toast.error("Sonuç bulunamadı");
+    } else {
+      toast.success("Sonuçlar bulundu");
+    }
+  };
+
+  const clearSearch = () => {
+    setSearchQuery("");
+    setSearchResult(null);
+    setShowSearchResults(false);
+  };
+
   return (
     <div className="flex h-full w-full relative overflow-hidden bg-gray-100/50">
       
       {/* SOL: HARİTA ALANI */}
       <div className={`flex-1 relative transition-all duration-300 ${selectedRoomId ? 'mr-0 md:mr-96' : ''}`}>
+
+        {/* Arama Çubuğu */}
+        <div className="absolute top-6 left-1/2 -translate-x-1/2 z-20 w-full max-w-xl px-6">
+          <form onSubmit={handleSearch} className="relative">
+            <div className="bg-white/95 backdrop-blur shadow-lg border border-gray-200 rounded-2xl overflow-hidden">
+              <div className="flex items-center">
+                <SearchIcon className="w-5 h-5 text-gray-400 ml-4" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Öğretmen, oda veya 'Öğretmen + Ders' ara..."
+                  className="flex-1 px-4 py-3 bg-transparent outline-none text-gray-900 placeholder:text-gray-400"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={clearSearch}
+                    className="p-2 hover:bg-gray-100 rounded-full mr-2 text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+                <button
+                  type="submit"
+                  className="bg-primary text-white px-6 py-3 hover:bg-primary/90 transition-colors font-medium"
+                >
+                  Ara
+                </button>
+              </div>
+            </div>
+
+            {/* Arama Sonuçları */}
+            {showSearchResults && searchResult && (
+              <div className="absolute top-full mt-2 w-full bg-white/95 backdrop-blur shadow-xl border border-gray-200 rounded-2xl p-4 animate-in slide-in-from-top-2 duration-200 z-1000">
+                {searchResult.type === 'teacher' && (
+                  <div>
+                    <h3 className="font-bold text-lg text-gray-900 mb-2">{searchResult.teacher}</h3>
+                    <div className="space-y-2">
+                      <div>
+                        <p className="text-sm text-gray-500 font-medium">Dersler:</p>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {searchResult.subjects.map((subject) => (
+                            <span key={subject} className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">
+                              {subject}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500 font-medium">Dersler Verilen Odalar:</p>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {searchResult.rooms.map((room) => (
+                            <span key={room} className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">
+                              {room}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      {searchResult.teacherRooms && searchResult.teacherRooms.length > 0 && (
+                        <div>
+                          <p className="text-sm text-gray-500 font-medium">Öğretmen Odası:</p>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {searchResult.teacherRooms.map((room) => (
+                              <span key={room} className="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded-full">
+                                {room}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {searchResult.type === 'room' && (
+                  <div>
+                    <h3 className="font-bold text-lg text-gray-900 mb-2">{searchResult.room}</h3>
+                    {searchResult.currentSubject ? (
+                      <div className="space-y-2">
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                          <p className="text-sm font-medium text-green-900">Şu Anki Ders</p>
+                          <p className="text-lg font-bold text-green-700 mt-1">{searchResult.currentSubject.subject}</p>
+                          <p className="text-sm text-green-600">{searchResult.currentSubject.time}</p>
+                          {searchResult.currentSubject.teacher && (
+                            <p className="text-sm text-green-600">Öğretmen: {searchResult.currentSubject.teacher}</p>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                        <p className="text-sm text-gray-600">{searchResult.message || 'Şu anda ders yok'}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {searchResult.type === 'teacher-subject' && (
+                  <div>
+                    <h3 className="font-bold text-lg text-gray-900 mb-2">
+                      {searchResult.teacher} - {searchResult.subject}
+                    </h3>
+                    <div>
+                      <p className="text-sm text-gray-500 font-medium mb-2">Bu dersin verildiği odalar:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {searchResult.rooms.map((room) => (
+                          <span key={room} className="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded-full">
+                            {room}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {searchResult.type === 'subject' && (
+                  <div>
+                    <h3 className="font-bold text-lg text-gray-900 mb-3">{searchResult.subject}</h3>
+                    <div className="space-y-2 max-h-96 overflow-y-auto">
+                      {searchResult.classes.map((classItem, index) => (
+                        <div
+                          key={`${classItem.room}-${classItem.day}-${classItem.time}-${index}`}
+                          className="bg-amber-50 border border-amber-200 rounded-lg p-3"
+                        >
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <p className="font-semibold text-amber-900">{classItem.room}</p>
+                              <p className="text-sm text-amber-700">{classItem.teacher}</p>
+                              <p className="text-xs text-amber-600 mt-1">{classItem.day}</p>
+                              <p className="text-xs text-amber-600">{classItem.time}</p>
+                            </div>
+                            <span className="bg-amber-100 text-amber-700 text-xs px-2 py-1 rounded-full whitespace-nowrap ml-2">
+                              {classItem.day}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {showSearchResults && !searchResult && (
+              <div className="absolute top-full mt-2 w-full bg-white/95 backdrop-blur shadow-xl border border-gray-200 rounded-2xl p-4 animate-in slide-in-from-top-2 duration-200 z-50">
+                <p className="text-gray-500 text-sm">Sonuç bulunamadı</p>
+              </div>
+            )}
+          </form>
+        </div>
         
         {/* Kat Seçici */}
         <div className="absolute top-32 left-6 z-20 flex flex-col gap-2">
