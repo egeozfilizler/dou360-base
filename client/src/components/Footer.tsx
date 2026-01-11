@@ -118,10 +118,10 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href="mailto:info@dou360.app"
+                  href="mailto:info.dou360@gmail.com"
                   className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors text-sm group"
                 >
-                  <span>info@dou360.app</span>
+                  <span>info.dou360@gmail.com</span>
                 </a>
               </li>
               <li>

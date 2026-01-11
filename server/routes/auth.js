@@ -63,10 +63,32 @@ router.post('/send-code', async (req, res) => {
       to: email,
       subject: 'DOU360 Verification Code',
       html: `
-        <h3>Welcome!</h3>
-        <p>Your verification code for completing your DOU360 registration:</p>
-        <h1 style="color: #bd2d28; letter-spacing: 5px;">${code}</h1>
-        <p>This code is valid for 10 minutes.</p>
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden;">
+          <div style="background-color: #C50E1F; padding: 30px 20px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 600; letter-spacing: 1px;">DOU360</h1>
+          </div>
+          
+          <div style="padding: 40px 30px; text-align: center;">
+            <h3 style="color: #1f2937; margin-top: 0; font-size: 22px;">Welcome!</h3>
+            <p style="color: #4b5563; font-size: 16px; line-height: 1.5; margin-bottom: 30px;">
+              Your verification code for completing your DOU360 registration:
+            </p>
+            
+            <div style="background-color: #ffffff; border-radius: 8px; padding: 15px; display: inline-block; margin-bottom: 25px; border: 2px dashed #C50E1F;">
+              <h1 style="color: #C50E1F; margin: 0; letter-spacing: 5px; font-size: 32px;">${code}</h1>
+            </div>
+            
+            <p style="color: #6b7280; font-size: 14px; margin: 0;">
+              This code is valid for 10 minutes.
+            </p>
+          </div>
+
+          <div style="background-color: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+              &copy; ${new Date().getFullYear()} Dogus University
+            </p>
+          </div>
+        </div>
       `
     });
 
@@ -186,10 +208,32 @@ router.post('/signin', async (req, res) => {
       to: email,
       subject: 'DOU360 Password Reset Code',
       html: `
-        <h3>Password Reset Request</h3>
-        <p>Use the code below to reset your account password:</p>
-        <h1 style="color: #DC2626; letter-spacing: 5px;">${code}</h1>
-        <p>This code is valid for 10 minutes. Do not share it with anyone.</p>
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden;">
+          <div style="background-color: #C50E1F; padding: 30px 20px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 600; letter-spacing: 1px;">DOU360</h1>
+          </div>
+          
+          <div style="padding: 40px 30px; text-align: center;">
+            <h3 style="color: #1f2937; margin-top: 0; font-size: 22px;">Password Reset Request</h3>
+            <p style="color: #4b5563; font-size: 16px; line-height: 1.5; margin-bottom: 30px;">
+              Use the code below to reset your account password:
+            </p>
+            
+            <div style="background-color: #ffffff; border-radius: 8px; padding: 15px; display: inline-block; margin-bottom: 25px; border: 2px dashed #C50E1F;">
+              <h1 style="color: #C50E1F; margin: 0; letter-spacing: 5px; font-size: 32px;">${code}</h1>
+            </div>
+            
+            <p style="color: #6b7280; font-size: 14px; margin: 0;">
+              This code is valid for 10 minutes. Do not share it with anyone.
+            </p>
+          </div>
+
+          <div style="background-color: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+              &copy; ${new Date().getFullYear()} Dogus University
+            </p>
+          </div>
+        </div>
       `
     });
 

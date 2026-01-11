@@ -12,17 +12,39 @@ export function Contact() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulated submission
-    setTimeout(() => {
+    try {
+      const response = await fetch('http://localhost:5001/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: formData.name,
+          subject: formData.subject,
+          message: formData.message
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSubmitted(true);
+        setFormData({ name: "", email: "", subject: "bug", message: "" });
+        
+        setTimeout(() => setSubmitted(false), 3000);
+      } else {
+        alert(data.message || "Failed to send message.");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Could not connect to the server. Please check your internet connection.");
+    } finally {
       setIsSubmitting(false);
-      setSubmitted(true);
-      setFormData({ name: "", email: "", subject: "bug", message: "" });
-      setTimeout(() => setSubmitted(false), 3000);
-    }, 1500);
+    }
   };
 
   return (
@@ -105,19 +127,7 @@ export function Contact() {
                       className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all placeholder:sm:text-zinc-600 placeholder:text-transparent"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-zinc-300 ml-1">Student Email</label>
-                      <input
-                        type="email"
-                        required
-                        placeholder="Email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
-                      className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all placeholder:sm:text-zinc-600 placeholder:text-transparent"
-                    />
-                  </div>
                 </div>
-
                 <div className="space-y-2">
                     <label className="text-sm font-medium text-zinc-300 ml-1">Subject</label>
                     <div className="grid grid-cols-3 gap-2">

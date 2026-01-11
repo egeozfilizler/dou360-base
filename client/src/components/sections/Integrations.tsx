@@ -76,6 +76,7 @@ export function Integrations() {
             
             {/* --- ACTIVE CARD (3D PIN) --- */}
             {item.status === "Active" ? (
+              <div className="relative z-0 flex items-center justify-center mt-0">
                  <PinContainer 
                     title="OBS Entry" 
                     href={item.href}
@@ -96,6 +97,7 @@ export function Integrations() {
                         </span>
                     </div>
                  </PinContainer>
+              </div>
             ) : (
               
               /* --- STANDARD CARDS (SOON) --- */
