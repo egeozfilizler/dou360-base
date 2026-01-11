@@ -562,7 +562,7 @@ const roomsData: FloorRooms = {
           { time: "09:00 - 09:50", subject: "Object Oriented Programming", teacher: "Prof. B. Kaya" },
         ],
         Friday: [],
-        Sunday: [{ time: "21:00 - 22:50", subject: "Object Oriented Programming", teacher: "Prof. B. Kaya" },],
+        Sunday: [{ time: "23:00 - 23:50", subject: "Object Oriented Programming", teacher: "Prof. B. Kaya" },],
       }
     },
     { id: "202", floor: 2, name: "202", schedule: { Monday: [], Tuesday: [], Wednesday: [], Thursday: [], Friday: [] } },
