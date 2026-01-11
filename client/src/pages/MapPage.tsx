@@ -45,11 +45,11 @@ export default function MapPage() {
     // Get current time in HH:MM format
     const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
 
-    // Find the current or next class
+    // Find the class that is currently in progress
     return daySchedule.find(item => {
-      const [startTime] = item.time.split(' - ');
-      return currentTime >= startTime;
-    }) || daySchedule[0];
+      const [startTime, endTime] = item.time.split(' - ');
+      return currentTime >= startTime && currentTime <= endTime;
+    }) || null;
   };
 
   // Helper function to get all classes for a room today
