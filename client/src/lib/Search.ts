@@ -1,7 +1,6 @@
 import { getRoomsForFloor, findRoomById, type ScheduleItem, type Room, type DaySchedule } from '@/data/rooms';
 
-interface TeacherSearchResult {
-  type: 'teacher';
+interface TeacherMatch {
   teacher: string;
   subjects: string[];
   rooms: Array<{
@@ -9,6 +8,11 @@ interface TeacherSearchResult {
     subjects: string[];
   }>;
   teacherRoom?: Room;
+}
+
+interface TeacherSearchResult {
+  type: 'teacher';
+  matches: TeacherMatch[];
 }
 
 interface RoomSearchResult {
@@ -99,83 +103,95 @@ function matchesTeacherName(teacherName: string, searchQuery: string): boolean {
  * Search for teacher's subjects and rooms
  */
 function searchByTeacher(teacherName: string): TeacherSearchResult | null {
-  const subjects = new Set<string>();
-  const roomSubjectsMap = new Map<string, Set<string>>();
-  let foundTeacherFullName: string | null = null;
-  let teacherLoungeRoom: Room | undefined = undefined;
+  const teacherMap = new Map<string, {
+    subjects: Set<string>;
+    roomSubjects: Map<string, Set<string>>;
+    teacherRoom?: Room;
+  }>();
 
-  // Search through all rooms
   const allRooms = getAllRooms();
   
   for (const room of allRooms) {
-    // Check if room is a teacher lounge with teachers array
     if (room.teachers && Array.isArray(room.teachers)) {
-      const teacher = room.teachers.find(t => matchesTeacherName(t.name, teacherName));
-      
-      if (teacher) {
-        if (!foundTeacherFullName) {
-          foundTeacherFullName = teacher.name;
+      room.teachers.forEach(teacher => {
+        if (!matchesTeacherName(teacher.name, teacherName)) return;
+
+        const entry = teacherMap.get(teacher.name) ?? {
+          subjects: new Set<string>(),
+          roomSubjects: new Map<string, Set<string>>(),
+          teacherRoom: room
+        };
+
+        if (!entry.teacherRoom) {
+          entry.teacherRoom = room;
         }
-        
-        // Mark this as the teacher's lounge room
-        if (!teacherLoungeRoom) {
-          teacherLoungeRoom = room;
-        }
-        
-        // Add all subjects from this teacher's schedule and track which rooms they teach in
+
         Object.values(teacher.schedule).forEach(daySchedule => {
           daySchedule.forEach(item => {
-            subjects.add(item.subject);
-            // If the teacher's schedule specifies a room, track the subject for that room
+            entry.subjects.add(item.subject);
             if (item.id) {
-              if (!roomSubjectsMap.has(item.id)) {
-                roomSubjectsMap.set(item.id, new Set());
+              if (!entry.roomSubjects.has(item.id)) {
+                entry.roomSubjects.set(item.id, new Set());
               }
-              roomSubjectsMap.get(item.id)!.add(item.subject);
+              entry.roomSubjects.get(item.id)!.add(item.subject);
             }
           });
         });
-      }
-    } else if (room.schedule) {
-      // Regular room format
+
+        teacherMap.set(teacher.name, entry);
+      });
+    }
+
+    if (room.schedule) {
       Object.values(room.schedule).forEach(daySchedule => {
         daySchedule.forEach(item => {
           if (item.teacher && matchesTeacherName(item.teacher, teacherName)) {
-            if (!foundTeacherFullName) {
-              foundTeacherFullName = item.teacher;
+            const entry = teacherMap.get(item.teacher) ?? {
+              subjects: new Set<string>(),
+              roomSubjects: new Map<string, Set<string>>(),
+              teacherRoom: undefined
+            };
+
+            entry.subjects.add(item.subject);
+
+            if (!entry.roomSubjects.has(room.id)) {
+              entry.roomSubjects.set(room.id, new Set());
             }
-            
-            subjects.add(item.subject);
-            // Track subject for this room
-            if (!roomSubjectsMap.has(room.id)) {
-              roomSubjectsMap.set(room.id, new Set());
-            }
-            roomSubjectsMap.get(room.id)!.add(item.subject);
+            entry.roomSubjects.get(room.id)!.add(item.subject);
+
+            teacherMap.set(item.teacher, entry);
           }
         });
       });
     }
   }
 
-  if (subjects.size === 0 || !foundTeacherFullName) {
+  if (teacherMap.size === 0) {
     return null;
   }
 
-  // Build the rooms array with their subjects
-  const roomsWithSubjects = Array.from(roomSubjectsMap.entries()).map(([roomId, subjectsSet]) => {
-    const room = findRoomById(roomId);
-    return room ? {
-      room,
-      subjects: Array.from(subjectsSet)
-    } : null;
-  }).filter((item): item is { room: Room; subjects: string[] } => item !== null);
+  const matches: TeacherMatch[] = Array.from(teacherMap.entries()).map(([teacher, data]) => {
+    const rooms = Array.from(data.roomSubjects.entries()).map(([roomId, subjectsSet]) => {
+      const room = findRoomById(roomId);
+      return room ? {
+        room,
+        subjects: Array.from(subjectsSet)
+      } : null;
+    }).filter((item): item is { room: Room; subjects: string[] } => item !== null);
+
+    return {
+      teacher,
+      subjects: Array.from(data.subjects),
+      rooms,
+      teacherRoom: data.teacherRoom
+    };
+  });
+
+  matches.sort((a, b) => a.teacher.localeCompare(b.teacher));
 
   return {
     type: 'teacher',
-    teacher: foundTeacherFullName,
-    subjects: Array.from(subjects),
-    rooms: roomsWithSubjects,
-    teacherRoom: teacherLoungeRoom
+    matches
   };
 }
 
@@ -483,6 +499,7 @@ export {
 
 export type {
   SearchResult,
+  TeacherMatch,
   TeacherSearchResult,
   RoomSearchResult,
   TeacherSubjectSearchResult,

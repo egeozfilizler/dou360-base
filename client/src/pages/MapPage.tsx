@@ -149,9 +149,11 @@ export default function MapPage() {
     if (result.type === 'room') {
       navigateToRoom(result.room);
     } else if (result.type === 'teacher') {
-      // If teacher has multiple rooms, go to first room
-      if (result.rooms.length > 0) {
-        navigateToRoom(result.rooms[0].room);
+      const teacherWithRoom = result.matches.find(match => match.rooms.length > 0);
+      if (teacherWithRoom) {
+        navigateToRoom(teacherWithRoom.rooms[0].room);
+      } else if (result.matches[0]?.teacherRoom) {
+        navigateToRoom(result.matches[0].teacherRoom);
       }
     } else if (result.type === 'subject') {
       // If subject has multiple classes, go to first one
@@ -326,35 +328,44 @@ export default function MapPage() {
 
                 {searchResults.type === 'teacher' && (
                   <>
-                    <div
-                      className="p-3 border-b border-gray-100"
-                      role={searchResults.teacherRoom ? "button" : undefined}
-                      tabIndex={searchResults.teacherRoom ? 0 : -1}
-                      onClick={() => searchResults.teacherRoom && navigateToRoom(searchResults.teacherRoom)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          if (searchResults.teacherRoom) navigateToRoom(searchResults.teacherRoom);
-                        }
-                      }}
-                    >
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Teacher</p>
-                      <p className="text-sm font-semibold text-slate-900">{searchResults.teacher}</p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {searchResults.subjects.length} subject(s) • {searchResults.rooms.length} room(s)
-                        {searchResults.teacherRoom && ` • Teacher room - ${searchResults.teacherRoom.id} (click to open)`}
-                      </p>
+                    <div className="p-3 border-b border-gray-100">
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Teacher</p>
+                      <p className="text-xs text-gray-500">{searchResults.matches.length} match(es)</p>
                     </div>
-                    <div className="max-h-[200px] overflow-y-auto">
-                      {searchResults.rooms.map((roomWithSubjects) => (
-                        <button
-                          key={roomWithSubjects.room.id}
-                          onClick={() => navigateToRoom(roomWithSubjects.room)}
-                            className="w-full p-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors text-sm"
-                        >
-                          <p className="font-medium text-slate-900">Room {roomWithSubjects.room.id}</p>
-                          <p className="text-xs text-gray-500">Floor {roomWithSubjects.room.floor} • {roomWithSubjects.subjects.join(', ')}</p>
-                        </button>
+                    <div className="max-h-[260px] overflow-y-auto divide-y divide-gray-100">
+                      {searchResults.matches.map((match) => (
+                        <div key={match.teacher} className="p-3 space-y-2">
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <p className="text-sm font-semibold text-slate-900">{match.teacher}</p>
+                              <p className="text-xs text-gray-500 mt-1">{match.subjects.length} subject(s) • {match.rooms.length} room(s)</p>
+                            </div>
+                            {match.teacherRoom && (
+                              <button
+                                onClick={() => navigateToRoom(match.teacherRoom!)}
+                                className="text-[11px] px-2 py-1 rounded border border-primary/30 text-primary bg-primary/5 hover:bg-primary/10 transition-colors"
+                              >
+                                Teacher room {match.teacherRoom.id}
+                              </button>
+                            )}
+                          </div>
+                          {match.rooms.length > 0 ? (
+                            <div className="flex flex-col gap-1">
+                              {match.rooms.map((roomWithSubjects) => (
+                                <button
+                                  key={roomWithSubjects.room.id}
+                                  onClick={() => navigateToRoom(roomWithSubjects.room)}
+                                  className="w-full p-3 text-left hover:bg-gray-50 border border-gray-100 rounded-lg transition-colors text-sm"
+                                >
+                                  <p className="font-medium text-slate-900">Room {roomWithSubjects.room.id}</p>
+                                  <p className="text-xs text-gray-500">Floor {roomWithSubjects.room.floor} • {roomWithSubjects.subjects.join(', ')}</p>
+                                </button>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-[11px] text-gray-400">No rooms listed for this teacher</p>
+                          )}
+                        </div>
                       ))}
                     </div>
                   </>
