@@ -2,8 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import FloorMap from "@/components/FloorMap";
 import { useMapInteraction } from "@/hooks/use-map-interaction";
-import { type Room } from "@/data/rooms";
-import { search, type SearchResult } from "@/lib/search";
+import { type Room, type ScheduleItem } from "@/data/rooms";
+import { search, type SearchResult, getAllRooms } from "@/lib/search";
 import { cn } from "@/lib/utils";
 import { 
   X, 
@@ -32,6 +32,41 @@ export default function MapPage() {
 
   // Getting values from the hook
   const { transform, handleMouseDown, handleZoom, setTransform } = useMapInteraction();
+  
+  // Helper function to get all classes for a teacher across all rooms
+  const getTeacherScheduleAcrossAllRooms = (teacherName: string) => {
+    const allRooms = getAllRooms();
+    const scheduleByDay: { [day: string]: Array<{ time: string; subject: string; roomId: string }> } = {};
+    
+    // Search through all rooms for classes taught by this teacher
+    for (const room of allRooms) {
+      if (room.schedule) {
+        // Regular room format
+        Object.entries(room.schedule).forEach(([day, daySchedule]) => {
+          daySchedule.forEach(item => {
+            if (item.teacher && item.teacher.toLowerCase() === teacherName.toLowerCase()) {
+              if (!scheduleByDay[day]) {
+                scheduleByDay[day] = [];
+              }
+              scheduleByDay[day].push({
+                time: item.time,
+                subject: item.subject,
+                roomId: room.id
+              });
+            }
+          });
+        });
+      }
+    }
+    
+    // Sort each day's classes by time
+    Object.keys(scheduleByDay).forEach(day => {
+      scheduleByDay[day].sort((a, b) => a.time.localeCompare(b.time));
+    });
+    
+    return scheduleByDay;
+  };
+  
   // Helper function to get current class for a room
   const getCurrentClass = (room: Room | null) => {
     if (!room || !room.schedule) return null;
@@ -348,27 +383,58 @@ export default function MapPage() {
                           {selectedRoom.teachers.map((teacher) => {
                             const now = new Date();
                             const currentDay = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(now);
-                            const today = teacher.schedule?.[currentDay] || [];
+                            const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+                            
+                            // Get all classes for this teacher across all rooms
+                            const teacherSchedule = getTeacherScheduleAcrossAllRooms(teacher.name);
+                            const today = teacherSchedule[currentDay] || [];
+                            
+                            // Find current class
+                            const currentClass = today.find(item => {
+                              const [startTime, endTime] = item.time.split(' - ');
+                              return currentTime >= startTime && currentTime <= endTime;
+                            });
+                            
                             return (
                               <div key={teacher.name} className="border border-gray-100 rounded-lg p-3 bg-white/60">
                                 <div className="flex items-center justify-between mb-2">
                                   <p className="text-sm font-semibold text-slate-900">{teacher.name}</p>
-                                  <p className="text-[11px] text-gray-500">Today</p>
+                                  <div className="flex items-center gap-2">
+                                    {currentClass && (
+                                      <span className="relative flex h-2 w-2">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                                      </span>
+                                    )}
+                                    <p className="text-[11px] text-gray-500">{currentDay}</p>
+                                  </div>
                                 </div>
                                 {today.length > 0 ? (
                                   <div className="space-y-2">
-                                    {today.map((cls, idx) => (
-                                      <div key={`${teacher.name}-${idx}`} className="flex items-start justify-between text-xs">
-                                        <div className="text-slate-700 font-medium">{cls.time}</div>
-                                        <div className="text-right text-gray-600">
-                                          <div className="font-medium">{cls.subject}</div>
-                                          {cls.room && <div className="text-[11px] text-gray-500">Room {cls.room}</div>}
+                                    {today.map((cls, idx) => {
+                                      const isCurrentClass = currentClass && cls.time === currentClass.time && cls.subject === currentClass.subject;
+                                      return (
+                                        <div 
+                                          key={`${teacher.name}-${idx}`} 
+                                          className={`flex items-start justify-between text-xs rounded p-2 ${
+                                            isCurrentClass ? 'bg-red-50 border border-red-100' : ''
+                                          }`}
+                                        >
+                                          <div className={`font-medium ${isCurrentClass ? 'text-primary' : 'text-slate-700'}`}>
+                                            {cls.time}
+                                          </div>
+                                          <div className="text-right text-gray-600">
+                                            <div className={`font-medium ${isCurrentClass ? 'text-slate-900' : ''}`}>
+                                              {cls.subject}
+                                            </div>
+                                            <div className="text-[11px] text-gray-500">Room {cls.roomId}</div>
+                                          </div>
                                         </div>
-                                      </div>
-                                    ))}
+                                      );
+                                    })}
                                   </div>
                                 ) : (
-                                  <p className="text-[11px] text-gray-400 italic">No classes today</p>
+                                  <p className="text-[11px] text-gray-400 italic">No classes scheduled for {currentDay}</p>
                                 )}
                               </div>
                             );

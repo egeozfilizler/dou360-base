@@ -127,11 +127,11 @@ function searchByTeacher(teacherName: string): TeacherSearchResult | null {
           daySchedule.forEach(item => {
             subjects.add(item.subject);
             // If the teacher's schedule specifies a room, track the subject for that room
-            if (item.room) {
-              if (!roomSubjectsMap.has(item.room)) {
-                roomSubjectsMap.set(item.room, new Set());
+            if (item.id) {
+              if (!roomSubjectsMap.has(item.id)) {
+                roomSubjectsMap.set(item.id, new Set());
               }
-              roomSubjectsMap.get(item.room)!.add(item.subject);
+              roomSubjectsMap.get(item.id)!.add(item.subject);
             }
           });
         });
@@ -201,7 +201,7 @@ function searchBySubject(subjectName: string): SubjectSearchResult | null {
           daySchedule.forEach(item => {
             if (item.subject.toLowerCase() === subjectName.toLowerCase()) {
               // For teacher lounges, use the room specified in the schedule item
-              const classRoom = item.room ? findRoomById(item.room) : room;
+              const classRoom = item.id ? findRoomById(item.id) : room;
               if (classRoom) {
                 classes.push({
                   room: classRoom,
@@ -327,8 +327,8 @@ function searchByTeacherAndSubject(teacherName: string, subjectName: string): Te
           daySchedule.forEach(item => {
             if (item.subject.toLowerCase() === subjectName.toLowerCase()) {
               // Add the room where the class is held (if specified)
-              if (item.room) {
-                const classRoom = findRoomById(item.room);
+              if (item.id) {
+                const classRoom = findRoomById(item.id);
                 if (classRoom) {
                   roomsSet.add(classRoom);
                 }
