@@ -198,6 +198,48 @@ export default function MapPage() {
     setIsSidebarOpen(false);
   };
 
+  const handleShare = async () => {
+    if (!selectedRoom) return;
+
+    const currentClass = getCurrentClass(selectedRoom);
+    const isTeacherLounge = selectedRoom.teachers && selectedRoom.teachers.length > 0;
+    
+    // Construct share message
+    let shareText = `📍 ${selectedRoom.id} - Doğuş University\n`;
+    shareText += `🏢 Floor: ${selectedRoom.floor === 0 ? 'Ground' : selectedRoom.floor > 0 ? selectedRoom.floor : `Basement ${Math.abs(selectedRoom.floor)}`}\n`;
+    
+    if (isTeacherLounge) {
+      shareText += `\n👨‍🏫 Teacher Lounge\n`;
+      shareText += `Teachers: ${selectedRoom.teachers.map(t => t.name).join(', ')}`;
+    } else if (currentClass) {
+      shareText += `\n🔴 Class in Progress:\n`;
+      shareText += `📚 ${currentClass.subject}\n`;
+      shareText += `👨‍🏫 ${currentClass.teacher}\n`;
+      shareText += `⏰ ${currentClass.time}`;
+    } else {
+      shareText += `\n✅ Room Available`;
+    }
+    
+    shareText += `\n\n📱 View on Map: ${window.location.origin}/map`;
+
+    // Try to use Web Share API
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Room ${selectedRoom.id}`,
+          text: shareText,
+        });
+      } catch (err) {
+        // User cancelled or share failed
+        console.log('Share cancelled or failed');
+      }
+    } else {
+      // Fallback to WhatsApp
+      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+      window.open(whatsappUrl, '_blank');
+    }
+  };
+
   const currentClass = selectedRoom ? getCurrentClass(selectedRoom) : null;
   const todayClasses = selectedRoom ? getTodayClasses(selectedRoom) : [];
 
@@ -512,10 +554,10 @@ export default function MapPage() {
                       </>
                     )}
                     <div className="p-4 bg-gray-50/50 border-t border-gray-100 flex gap-3">
-                        <button className="flex-1 bg-slate-900 hover:bg-black text-white text-sm font-medium py-2.5 px-4 rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2">
-                            <Navigation size={18} /> Navigation
-                        </button>
-                        <button className="aspect-square flex items-center justify-center rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-slate-700 transition-colors shadow-sm w-[42px]">
+                        <button 
+                            onClick={handleShare}
+                            className="aspect-square flex items-center justify-center rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-slate-700 transition-colors shadow-sm w-[42px]"
+                        >
                             <Share2 size={20} />
                         </button>
                     </div>
@@ -524,14 +566,14 @@ export default function MapPage() {
         )}
 
         {/* Controls */}
-        <div className="absolute bottom-8 right-8 pointer-events-auto flex flex-col items-end gap-4">
-            <div className="flex flex-col bg-white rounded-xl shadow-[0_4px_20px_rgb(0,0,0,0.08)] p-1.5 gap-1 border border-gray-100/50">
+        <div className="absolute bottom-8 right-8 pointer-events-auto flex flex-col items-end gap-4 w-[52px]">
+            <div className="flex flex-col bg-white rounded-xl shadow-[0_4px_20px_rgb(0,0,0,0.08)] p-1.5 gap-1 border border-gray-100/50 w-full">
                 {[3, 2, 1, 0, -1, -2].map((floor) => (
                     <button
                         key={floor}
                         onClick={() => setCurrentFloor(floor)}
                         className={cn(
-                            "w-10 h-10 flex items-center justify-center rounded-lg text-sm transition-all",
+                            "w-full h-10 flex items-center justify-center rounded-lg text-sm transition-all",
                             currentFloor === floor 
                                 ? "bg-primary text-white shadow-md font-bold" 
                                 : "text-gray-500 font-semibold hover:bg-gray-50 hover:text-slate-900"
@@ -542,12 +584,12 @@ export default function MapPage() {
                 ))}
             </div>
 
-            <div className="flex flex-col bg-white rounded-xl shadow-[0_4px_20px_rgb(0,0,0,0.08)] divide-y divide-gray-100 border border-gray-100/50 overflow-hidden">
-                <button onClick={handleZoomIn} className="w-10 h-10 flex items-center justify-center text-slate-700 hover:bg-gray-50 hover:text-primary transition-colors"><Plus size={20} /></button>
-                <button onClick={handleZoomOut} className="w-10 h-10 flex items-center justify-center text-slate-700 hover:bg-gray-50 hover:text-primary transition-colors"><Minus size={20} /></button>
+            <div className="flex flex-col bg-white rounded-xl shadow-[0_4px_20px_rgb(0,0,0,0.08)] divide-y divide-gray-100 border border-gray-100/50 overflow-hidden w-full">
+                <button onClick={handleZoomIn} className="w-full h-10 flex items-center justify-center text-slate-700 hover:bg-gray-50 hover:text-primary transition-colors"><Plus size={20} /></button>
+                <button onClick={handleZoomOut} className="w-full h-10 flex items-center justify-center text-slate-700 hover:bg-gray-50 hover:text-primary transition-colors"><Minus size={20} /></button>
             </div>
 
-            <button onClick={handleLogout} className="w-10 h-10 bg-white rounded-lg shadow-[0_4px_20px_rgb(0,0,0,0.08)] flex items-center justify-center text-slate-700 hover:bg-red-50 hover:text-red-600 border border-gray-100/50 transition-colors">
+            <button onClick={handleLogout} className="w-full h-10 bg-white rounded-lg shadow-[0_4px_20px_rgb(0,0,0,0.08)] flex items-center justify-center text-slate-700 hover:bg-red-50 hover:text-red-600 border border-gray-100/50 transition-colors">
                 <LogOut size={20} />
             </button>
         </div>
