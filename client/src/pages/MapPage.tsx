@@ -30,6 +30,16 @@ export default function MapPage() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
+  // Check authentication on mount
+  useEffect(() => {
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token") || 
+                  localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
+    
+    if (!token) {
+      navigate("/");
+    }
+  }, [navigate]);
+
   // Getting values from the hook
   const { transform, handleMouseDown, handleZoom, setTransform } = useMapInteraction();
   
